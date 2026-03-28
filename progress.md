@@ -38,6 +38,12 @@ Original prompt: od czego zaczniej implementacje? zrób to
 - Replaced the direct-selection shortcut with the planned action-menu flow in `ui/interaction.js`: clicking a walker now opens `mode: "menu_open"`, selecting `Choose destination` enters `mode: "picking_destination"`, and destination preview/confirm still uses the two-click confirmation step.
 - Added popup menu rendering in `renderer/canvas.js`, including hover highlighting and the updated hint copy for `menu_open` vs `picking_destination`.
 - Verified the full menu flow in Chromium at `http://127.0.0.1:8082/index.html`: `output/web-game-action-menu/state-0.json` shows `idle -> menu_open -> picking_destination`, then successful street confirmation back to `menu_open`, and the same menu-driven flow for follow assignment ending with `destination.type === "character"`. Screenshot saved to `output/web-game-action-menu/shot-0.png`; no console errors were recorded.
+- Added `ui/timeControls.js` with speed buttons for `0x/1x/2x/4x/10x` and keyboard shortcuts on keys `0` through `4`.
+- Extended `index.html` with a persistent `#time-controls` row, button styling for active speed state, and a `collapsed` mode that hides the main sliders/status columns while keeping time controls visible.
+- Wired `main.js` to track `timeScale`, apply it inside `tick()`, and toggle the main control panel with the new `#panel-toggle` button.
+- Fixed a keyboard-focus snag in the new controls by blurring the clicked speed/toggle buttons, so `0`-`4` shortcuts continue to work after mouse interaction.
+- Verified in Chromium at `http://127.0.0.1:8083/index.html` that `1×`, `■`, `2×`, and `10×` all switch active state correctly, that pause remains frozen after activation, and that collapsing the panel hides `.controls-left/.controls-right` while keeping the time row visible.
+- Captured fresh artifacts: `output/web-game-time-controls-smoke/shot-0.png`, `output/web-game-time-controls-smoke/state-0.json`, and full-page layout screenshot `output/web-game-time-controls-full.png`.
 
 TODO
 - Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set and decide whether follow should be a dedicated menu item or remain a destination subtype.

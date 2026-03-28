@@ -4,6 +4,7 @@ import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
 import { createInteractionController } from './ui/interaction.js';
+import { createTimeControls } from './ui/timeControls.js';
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 700;
@@ -13,6 +14,10 @@ const ctx = canvas.getContext('2d');
 const seedReadout = document.getElementById('seed-readout');
 const controlPanel = document.getElementById('control-panel');
 const regenerateButton = document.getElementById('regenerate-btn');
+const timeControlsPanel = document.getElementById('time-controls');
+const panelToggle = document.getElementById('panel-toggle');
+const controlsEl = document.getElementById('controls');
+let timeScale = 1;
 
 const params = {
   width: CANVAS_WIDTH,
@@ -53,6 +58,19 @@ const controls = createControls({
     Object.assign(params, nextValues);
     regenerate();
   },
+});
+
+createTimeControls({
+  mount: timeControlsPanel,
+  onSpeedChange(scale) {
+    timeScale = scale;
+  },
+});
+
+panelToggle.addEventListener('click', () => {
+  const isCollapsed = controlsEl.classList.toggle('collapsed');
+  panelToggle.textContent = isCollapsed ? '▼' : '▲';
+  panelToggle.blur();
 });
 
 function createCharacters(city, seed, count) {
@@ -118,7 +136,7 @@ function regenerate() {
 function tick(now) {
   const elapsed = Math.max(0, Math.min(100, now - state.lastTickMs));
   state.lastTickMs = now;
-  stepSimulation(elapsed);
+  stepSimulation(elapsed * timeScale);
   window.requestAnimationFrame(tick);
 }
 

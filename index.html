@@ -161,6 +161,63 @@
       box-shadow: none;
     }
 
+    #time-controls {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(160, 175, 218, 0.12);
+    }
+
+    #panel-toggle {
+      border: 1px solid rgba(160, 175, 218, 0.2);
+      border-radius: 6px;
+      padding: 6px 10px;
+      background: rgba(20, 27, 47, 0.52);
+      color: #9ca6c7;
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer;
+      transition: color 120ms ease;
+    }
+
+    #panel-toggle:hover {
+      color: #f2f5ff;
+    }
+
+    .time-btn {
+      border: 1px solid rgba(160, 175, 218, 0.2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      background: rgba(20, 27, 47, 0.52);
+      color: #9ca6c7;
+      font: inherit;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+    }
+
+    .time-btn:hover {
+      color: #f2f5ff;
+    }
+
+    .time-btn[data-active="true"] {
+      background: linear-gradient(180deg, rgba(92, 111, 181, 0.9), rgba(63, 78, 134, 0.9));
+      color: #f4f7ff;
+      border-color: rgba(145, 164, 255, 0.4);
+    }
+
+    #controls.collapsed .controls-left,
+    #controls.collapsed .controls-right {
+      display: none;
+    }
+
+    #controls.collapsed {
+      padding-bottom: 12px;
+    }
+
     #city-canvas {
       width: 900px;
       max-width: 100%;
@@ -205,6 +262,10 @@
         <span id="seed-readout" aria-live="polite"></span>
       </div>
       <button id="regenerate-btn" type="button">In Sync</button>
+    </div>
+
+    <div id="time-controls">
+      <button id="panel-toggle" type="button" aria-label="Toggle panel">▲</button>
     </div>
   </div>
 

@@ -43,6 +43,27 @@ The top panel contains sliders for:
 
 Changing sliders does not immediately regenerate the map. Click `Regenerate` to apply the pending values.
 
+The same top panel now also includes time controls for the live simulation:
+
+| Control | Description |
+|---|---|
+| `■` | Pause character movement completely (`0x`) |
+| `1×` | Normal simulation speed |
+| `2×` | Double-speed simulation |
+| `4×` | Fast-forward simulation |
+| `10×` | Maximum fast-forward mode |
+| `▲ / ▼` | Collapse or expand the main control panel while leaving the time controls visible |
+
+Keyboard shortcuts mirror the buttons:
+
+| Key | Action |
+|---|---|
+| `0` | Pause (`■`) |
+| `1` | Set `1×` speed |
+| `2` | Set `2×` speed |
+| `3` | Set `4×` speed |
+| `4` | Set `10×` speed |
+
 ### Main runtime parameters (`main.js`)
 
 These are still the default values loaded on page start:
@@ -157,8 +178,9 @@ The interaction layer maps a street click to the nearest reachable street-graph 
 5. `pathfinding/bfs.js` finds shortest routes across the intersection graph.
 6. `entities/character.js` spawns walkers, assigns reachable targets, advances them segment-by-segment, and keeps a short visual trail.
 7. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
-8. `ui/interaction.js` handles canvas hit testing, walker selection, and street-click rerouting.
-9. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, and debug intersections.
+8. `ui/timeControls.js` manages simulation speed buttons, keyboard shortcuts, and the active time-scale state.
+9. `ui/interaction.js` handles canvas hit testing, walker selection, and street-click rerouting.
+10. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, and debug intersections.
 
 ## Architecture
 
@@ -167,7 +189,7 @@ generator/     — Procedural city generation (districts, streets, buildings, gr
 pathfinding/   — BFS route finding on the street graph
 entities/      — Character spawning and movement updates
 renderer/      — Stateless Canvas renderer
-ui/            — Control panel plus canvas interaction flow
+ui/            — Control panel, time controls, and canvas interaction flow
 scripts/       — Local development helpers (including Playwright screenshot checks)
 main.js        — Game loop and high-level parameters
 ```

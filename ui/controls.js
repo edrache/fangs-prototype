@@ -27,6 +27,13 @@ const CONTROL_CONFIG = [
     max: 10,
     step: 1,
   },
+  {
+    key: 'characters',
+    label: 'Characters',
+    min: 1,
+    max: 50,
+    step: 1,
+  },
 ];
 
 function createControlRow(control, value, onInput) {

@@ -7,8 +7,8 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 - Orthogonal street grid divided into color-coded districts
 - Compound buildings (L/T/U shapes) filling city blocks
 - Dead-end secondary streets
-- Intersection graph prepared for BFS pathfinding
-- Seed-based deterministic generation
+- Moving dot characters navigating the street graph with BFS
+- Seed-based deterministic city generation and initial character placement
 
 ## Running
 
@@ -39,6 +39,7 @@ The top panel contains sliders for:
 | `Districts` | Target number of districts used to derive the major grid |
 | `Street Density` | Density of secondary streets inside districts |
 | `Building Density` | Fraction of valid parcels that should be filled with buildings |
+| `Characters` | Number of walkers spawned onto the street graph |
 
 Changing sliders does not immediately regenerate the map. Click `Regenerate` to apply the pending values.
 
@@ -54,6 +55,7 @@ These are still the default values loaded on page start:
 | `params.districts` | Target number of districts used to derive the major grid |
 | `params.streetDensity` | Density of secondary streets inside each district |
 | `params.buildingDensity` | How many valid parcels receive buildings; low values leave more empty parcels, high values fill more of the city |
+| `params.characters` | Number of moving dots spawned after each regeneration |
 
 Example:
 
@@ -65,6 +67,7 @@ const params = {
   districts: 9,
   streetDensity: 3,
   buildingDensity: 10,
+  characters: 10,
 };
 ```
 
@@ -113,6 +116,25 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 | `STREET_FILL` | Street fill color |
 | `STREET_EDGE` | Subtle edge highlight drawn on streets |
 | `INTERSECTION_FILL` | Small debug dots drawn at graph intersections |
+| `CHARACTER_RADIUS` | Radius of each moving dot character |
+| `CHARACTER_TRAIL_STEPS` | Maximum number of recent trail points rendered |
+
+### Characters (`entities/character.js`)
+
+| Variable | Description |
+|---|---|
+| `CHARACTER_COLORS` | Repeating palette used for spawned walkers |
+| `TRAIL_LENGTH` | Maximum number of stored trail points per character |
+| `speed: rng.float(40, 100)` | Default movement speed range in pixels per second |
+
+To change how fast characters move, edit the `speed` assignment inside `createCharacter(...)` in `entities/character.js`.
+Examples:
+
+```js
+speed: rng.float(20, 55), // slower range
+speed: rng.float(80, 140), // faster range
+speed: 70, // same speed for every character
+```
 
 ## How City Generation Works
 
@@ -120,13 +142,17 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 2. `generator/streets.js` adds full-span secondary streets and dead ends inside each district.
 3. `generator/graph.js` converts street crossings and endpoints into an intersection graph.
 4. `generator/buildings.js` derives buildable parcels from the street layout, accounts for dead ends and street clearance, and fills a density-dependent share of those parcels with compound buildings.
-5. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
-6. `renderer/canvas.js` draws districts, streets, buildings, and debug intersections.
+5. `pathfinding/bfs.js` finds shortest routes across the intersection graph.
+6. `entities/character.js` spawns walkers, assigns reachable targets, advances them segment-by-segment, and keeps a short visual trail.
+7. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
+8. `renderer/canvas.js` draws districts, streets, buildings, moving characters, and debug intersections.
 
 ## Architecture
 
 ```
 generator/     — Procedural city generation (districts, streets, buildings, graph)
+pathfinding/   — BFS route finding on the street graph
+entities/      — Character spawning and movement updates
 renderer/      — Stateless Canvas renderer
 ui/            — Control panel and parameter application flow
 scripts/       — Local development helpers (including Playwright screenshot checks)

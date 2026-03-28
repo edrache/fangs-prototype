@@ -1,4 +1,6 @@
+import { createCharacter, updateCharacter } from './entities/character.js';
 import { generateCity } from './generator/city.js';
+import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
 
@@ -17,13 +19,16 @@ const params = {
   seed: 1245,
   districts: 9,
   streetDensity: 4,
-  buildingDensity: 10
+  buildingDensity: 10,
+  characters: 10,
 };
 
 const state = {
   city: null,
+  characters: [],
   frame: 0,
   timeMs: 0,
+  lastTickMs: performance.now(),
 };
 
 const controls = createControls({
@@ -36,21 +41,69 @@ const controls = createControls({
   },
 });
 
+function createCharacters(city, seed, count) {
+  if (!city || city.intersections.length === 0) {
+    return [];
+  }
+
+  const rng = createRNG(seed ^ 0x9e3779b9);
+  const characterCount = Math.min(count, city.intersections.length);
+  const characters = [];
+
+  for (let index = 0; index < characterCount; index += 1) {
+    characters.push(createCharacter(city.intersections, rng, index));
+  }
+
+  return characters;
+}
+
+function updateCharacters(dtSeconds) {
+  if (!state.city || state.characters.length === 0) {
+    return;
+  }
+
+  for (const character of state.characters) {
+    updateCharacter(character, dtSeconds, state.city.intersections, state.characters);
+  }
+}
+
+function render() {
+  renderCity(ctx, state.city, state.characters);
+}
+
+function stepSimulation(deltaMs) {
+  const safeDeltaMs = Math.max(0, deltaMs);
+  const stepMs = 1000 / 60;
+  let remaining = safeDeltaMs;
+
+  state.timeMs += safeDeltaMs;
+  state.frame += Math.max(1, Math.round(safeDeltaMs / stepMs));
+
+  while (remaining > 0) {
+    const currentStep = Math.min(stepMs, remaining);
+    updateCharacters(currentStep / 1000);
+    remaining -= currentStep;
+  }
+
+  render();
+}
+
 function regenerate() {
   state.city = generateCity(params);
+  state.characters = createCharacters(state.city, params.seed, params.characters);
+  state.frame = 0;
+  state.timeMs = 0;
+  state.lastTickMs = performance.now();
   seedReadout.textContent =
-    `seed ${params.seed} · districts ${state.city.districts.length} · streets ${state.city.meta.totalStreetCount} · buildings ${state.city.meta.buildingCount} · nodes ${state.city.intersections.length}`;
+    `seed ${params.seed} · districts ${state.city.districts.length} · streets ${state.city.meta.totalStreetCount} · buildings ${state.city.meta.buildingCount} · nodes ${state.city.intersections.length} · chars ${state.characters.length}`;
   controls.setAppliedValues(params);
   render();
 }
 
-function render() {
-  renderCity(ctx, state.city);
-}
-
-function tick() {
-  state.frame += 1;
-  render();
+function tick(now) {
+  const elapsed = Math.max(0, Math.min(100, now - state.lastTickMs));
+  state.lastTickMs = now;
+  stepSimulation(elapsed);
   window.requestAnimationFrame(tick);
 }
 
@@ -60,10 +113,12 @@ window.render_game_to_text = () => JSON.stringify({
   requestedDistricts: params.districts,
   streetDensity: params.streetDensity,
   buildingDensity: params.buildingDensity,
+  requestedCharacterCount: params.characters,
   generatedDistricts: state.city?.districts.length ?? 0,
   totalStreetCount: state.city?.streets.length ?? 0,
   buildingCount: state.city?.buildings.length ?? 0,
   intersectionCount: state.city?.intersections.length ?? 0,
+  characterCount: state.characters.length,
   timeMs: state.timeMs,
   frame: state.frame,
   districts: (state.city?.districts ?? []).map((district) => ({
@@ -73,12 +128,26 @@ window.render_game_to_text = () => JSON.stringify({
   })),
   buildingsSample: (state.city?.buildings ?? []).slice(0, 6),
   intersectionsSample: (state.city?.intersections ?? []).slice(0, 12),
+  characters: state.characters.map((character) => ({
+    id: character.id,
+    color: character.color,
+    pos: {
+      x: Number(character.pos.x.toFixed(2)),
+      y: Number(character.pos.y.toFixed(2)),
+    },
+    from: character.from,
+    to: character.to,
+    progress: Number(character.progress.toFixed(3)),
+    trail: character.trail.slice(0, 10).map((point) => ({
+      x: Number(point.x.toFixed(2)),
+      y: Number(point.y.toFixed(2)),
+    })),
+  })),
 });
 
 window.advanceTime = (ms) => {
-  state.timeMs += ms;
-  state.frame += Math.max(1, Math.round(ms / (1000 / 60)));
-  render();
+  stepSimulation(ms);
+  state.lastTickMs = performance.now();
 };
 
 regenerate();

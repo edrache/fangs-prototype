@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fangs - City Generator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      color-scheme: dark;
+      font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top, rgba(66, 78, 140, 0.22), transparent 42%),
+        linear-gradient(180deg, #11172b 0%, #090d18 100%);
+      color: #d3d7e6;
+    }
+
+    #controls {
+      width: 900px;
+      max-width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(160, 175, 218, 0.2);
+      border-radius: 10px;
+      background: rgba(12, 18, 32, 0.78);
+      backdrop-filter: blur(8px);
+    }
+
+    .panel-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .panel-copy strong {
+      font-size: 14px;
+      color: #f2f5ff;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .panel-copy span,
+    #seed-readout {
+      font-size: 12px;
+      color: #9ca6c7;
+    }
+
+    #city-canvas {
+      width: 900px;
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border: 1px solid rgba(160, 175, 218, 0.18);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <div class="panel-copy">
+      <strong>Fangs Prototype</strong>
+      <span>Stage 1 milestone: seeded districts and major streets</span>
+    </div>
+    <div id="seed-readout" aria-live="polite"></div>
+  </div>
+
+  <canvas id="city-canvas" width="900" height="700"></canvas>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

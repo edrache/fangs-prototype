@@ -1,5 +1,6 @@
 import { generateCity } from './generator/city.js';
 import { renderCity } from './renderer/canvas.js';
+import { createControls } from './ui/controls.js';
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 700;
@@ -7,6 +8,8 @@ const CANVAS_HEIGHT = 700;
 const canvas = document.getElementById('city-canvas');
 const ctx = canvas.getContext('2d');
 const seedReadout = document.getElementById('seed-readout');
+const controlPanel = document.getElementById('control-panel');
+const regenerateButton = document.getElementById('regenerate-btn');
 
 const params = {
   width: CANVAS_WIDTH,
@@ -23,10 +26,21 @@ const state = {
   timeMs: 0,
 };
 
+const controls = createControls({
+  mount: controlPanel,
+  button: regenerateButton,
+  initialValues: params,
+  onApply(nextValues) {
+    Object.assign(params, nextValues);
+    regenerate();
+  },
+});
+
 function regenerate() {
   state.city = generateCity(params);
   seedReadout.textContent =
     `seed ${params.seed} · districts ${state.city.districts.length} · streets ${state.city.meta.totalStreetCount} · buildings ${state.city.meta.buildingCount} · nodes ${state.city.intersections.length}`;
+  controls.setAppliedValues(params);
   render();
 }
 

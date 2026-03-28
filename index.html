@@ -34,14 +34,32 @@
       width: 900px;
       max-width: 100%;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 16px 18px;
       border: 1px solid rgba(160, 175, 218, 0.2);
       border-radius: 10px;
       background: rgba(12, 18, 32, 0.78);
       backdrop-filter: blur(8px);
+    }
+
+    .controls-left,
+    .controls-right {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .controls-left {
+      flex: 1 1 420px;
+      min-width: min(100%, 320px);
+    }
+
+    .controls-right {
+      flex: 0 0 220px;
+      align-items: stretch;
     }
 
     .panel-copy {
@@ -63,6 +81,85 @@
       color: #9ca6c7;
     }
 
+    #control-panel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+      gap: 10px 12px;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid rgba(160, 175, 218, 0.14);
+      border-radius: 8px;
+      background: rgba(20, 27, 47, 0.52);
+    }
+
+    .control-label {
+      font-size: 11px;
+      color: #d9e1ff;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .control-value {
+      min-width: 34px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(91, 108, 168, 0.22);
+      color: #eff3ff;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .control-slider {
+      width: 100%;
+      accent-color: #91a4ff;
+    }
+
+    .status-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid rgba(160, 175, 218, 0.14);
+      border-radius: 8px;
+      background: rgba(20, 27, 47, 0.52);
+    }
+
+    #seed-readout {
+      line-height: 1.5;
+    }
+
+    #regenerate-btn {
+      border: 1px solid rgba(145, 164, 255, 0.24);
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: linear-gradient(180deg, rgba(92, 111, 181, 0.9), rgba(63, 78, 134, 0.9));
+      color: #f4f7ff;
+      font: inherit;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+    }
+
+    #regenerate-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    #regenerate-btn:disabled {
+      opacity: 0.58;
+      cursor: default;
+      box-shadow: none;
+    }
+
     #city-canvas {
       width: 900px;
       max-width: 100%;
@@ -72,15 +169,42 @@
       border-radius: 14px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
     }
+
+    @media (max-width: 760px) {
+      #control-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .controls-right {
+        flex-basis: 100%;
+      }
+
+      .control-row {
+        grid-template-columns: auto auto;
+      }
+
+      .control-slider {
+        grid-column: 1 / -1;
+      }
+    }
   </style>
 </head>
 <body>
   <div id="controls">
-    <div class="panel-copy">
-      <strong>Fangs Prototype</strong>
-      <span>Stage 1 milestone: seeded districts and major streets</span>
+    <div class="controls-left">
+      <div class="panel-copy">
+        <strong>Fangs Prototype</strong>
+        <span>Stage 1 milestone: seeded districts, streets, and district-aware building generation</span>
+      </div>
+      <div id="control-panel"></div>
     </div>
-    <div id="seed-readout" aria-live="polite"></div>
+
+    <div class="controls-right">
+      <div class="status-copy">
+        <span id="seed-readout" aria-live="polite"></span>
+      </div>
+      <button id="regenerate-btn" type="button">In Sync</button>
+    </div>
   </div>
 
   <canvas id="city-canvas" width="900" height="700"></canvas>

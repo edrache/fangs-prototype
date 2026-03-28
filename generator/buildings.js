@@ -11,19 +11,14 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function pickBuildingCount(block, buildingDensity, rng) {
-  const area = block.w * block.h;
-  const densityScale = clamp(buildingDensity / 10, 0.1, 1);
-  const areaTarget = Math.max(1, Math.round(area / 12000));
-  const scaledTarget = Math.round(areaTarget + densityScale * 5);
-  const low = Math.max(1, scaledTarget - 1);
-  const high = Math.max(low, scaledTarget + 1);
-  return clamp(rng.int(low, high), 1, 9);
+function getParcelSpan(buildingDensity) {
+  return Math.round(clamp(64 - buildingDensity * 4, 22, 64));
 }
 
-function getMaxBuildingCells(block) {
-  const cols = Math.max(1, Math.floor(block.w / MIN_BLOCK_SPAN));
-  const rows = Math.max(1, Math.floor(block.h / MIN_BLOCK_SPAN));
+function getMaxBuildingCells(block, buildingDensity) {
+  const parcelSpan = getParcelSpan(buildingDensity);
+  const cols = Math.max(1, Math.floor(block.w / parcelSpan));
+  const rows = Math.max(1, Math.floor(block.h / parcelSpan));
   return cols * rows;
 }
 
@@ -188,11 +183,14 @@ function shuffle(values, rng) {
   return copy;
 }
 
-function createBaseRect(cell, rng) {
+function createBaseRectForDensity(cell, buildingDensity, rng) {
+  const densityScale = clamp(buildingDensity / 10, 0.1, 1);
+  const minCoverage = 0.38 - densityScale * 0.1;
+  const maxCoverage = 0.82 - densityScale * 0.16;
   const maxWidth = Math.max(MIN_BASE_SIZE, cell.w - CELL_PADDING * 2);
   const maxHeight = Math.max(MIN_BASE_SIZE, cell.h - CELL_PADDING * 2);
-  const width = randomRange(Math.max(MIN_BASE_SIZE, maxWidth * 0.45), maxWidth, rng);
-  const height = randomRange(Math.max(MIN_BASE_SIZE, maxHeight * 0.45), maxHeight, rng);
+  const width = randomRange(Math.max(MIN_BASE_SIZE, maxWidth * minCoverage), Math.max(MIN_BASE_SIZE, maxWidth * maxCoverage), rng);
+  const height = randomRange(Math.max(MIN_BASE_SIZE, maxHeight * minCoverage), Math.max(MIN_BASE_SIZE, maxHeight * maxCoverage), rng);
   const x = randomRange(cell.x + CELL_PADDING, cell.x + cell.w - CELL_PADDING - width, rng);
   const y = randomRange(cell.y + CELL_PADDING, cell.y + cell.h - CELL_PADDING - height, rng);
 
@@ -247,9 +245,9 @@ function createAnnex(base, cell, side, rng) {
   return { x, y: base.y + base.h, w, h };
 }
 
-function createCompoundBuilding(cell, districtId, rng, streetRects) {
+function createCompoundBuilding(cell, districtId, buildingDensity, rng, streetRects) {
   for (let attempt = 0; attempt < BUILDING_PLACEMENT_ATTEMPTS; attempt += 1) {
-    const base = createBaseRect(cell, rng);
+    const base = createBaseRectForDensity(cell, buildingDensity, rng);
     if (rectHitsStreet(base, streetRects)) {
       continue;
     }
@@ -301,28 +299,23 @@ function createBuildingCells(block, targetCount) {
   return cells;
 }
 
-function getOccupancyRatio(buildingDensity) {
-  return clamp(0.12 + (buildingDensity / 10) * 0.88, 0.12, 1);
-}
-
 function generateBuildingsForBlock(block, buildingDensity, rng, streetRects) {
-  const targetCount = Math.min(pickBuildingCount(block, buildingDensity, rng), getMaxBuildingCells(block));
+  const targetCount = getMaxBuildingCells(block, 10);
   const cells = createBuildingCells(block, targetCount);
-  const occupancyRatio = getOccupancyRatio(buildingDensity);
   const candidateCells = shuffle(
-    cells.filter((cell) => cell.w >= MIN_BLOCK_SPAN && cell.h >= MIN_BLOCK_SPAN),
+    cells.filter((cell) => cell.w >= FALLBACK_CELL_SIZE && cell.h >= FALLBACK_CELL_SIZE),
     rng,
   );
   const effectiveCells = candidateCells.length > 0 ? candidateCells : [block];
   const desiredBuildings = clamp(
-    Math.round(effectiveCells.length * occupancyRatio),
+    Math.ceil(effectiveCells.length * clamp(buildingDensity / 10, 0.1, 1)),
     0,
     effectiveCells.length,
   );
   const buildings = [];
 
   for (const cell of effectiveCells) {
-    const building = createCompoundBuilding(cell, block.districtId, rng, streetRects);
+    const building = createCompoundBuilding(cell, block.districtId, buildingDensity, rng, streetRects);
     if (building) {
       buildings.push(building);
     }
@@ -366,7 +359,7 @@ export function generateBuildings({
         : createFallbackCells(district, districtBounds, districtStreetRects);
 
       for (const fallbackCell of fallbackCells) {
-        const fallbackBuilding = createCompoundBuilding(fallbackCell, district.id, rng, districtStreetRects);
+        const fallbackBuilding = createCompoundBuilding(fallbackCell, district.id, buildingDensity, rng, districtStreetRects);
         if (fallbackBuilding) {
           districtBuildings.push(fallbackBuilding);
           break;

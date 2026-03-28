@@ -25,11 +25,26 @@ For browser-based visual checks used during development:
 node scripts/local_playwright_check.mjs http://127.0.0.1:8080/index.html output/web-game
 ```
 
-## Current Control Model
+## Controls
 
-There is no in-app slider UI yet. Generation is currently controlled directly in `main.js`.
+The app now exposes an in-browser control panel plus the same values in `main.js`.
+
+### In-browser controls
+
+The top panel contains sliders for:
+
+| Control | Description |
+|---|---|
+| `Seed` | Deterministic seed for the whole city |
+| `Districts` | Target number of districts used to derive the major grid |
+| `Street Density` | Density of secondary streets inside districts |
+| `Building Density` | Fraction of valid parcels that should be filled with buildings |
+
+Changing sliders does not immediately regenerate the map. Click `Regenerate` to apply the pending values.
 
 ### Main runtime parameters (`main.js`)
+
+These are still the default values loaded on page start:
 
 | Variable | Description |
 |---|---|
@@ -38,7 +53,7 @@ There is no in-app slider UI yet. Generation is currently controlled directly in
 | `params.seed` | Deterministic seed. Same seed + same params = same city |
 | `params.districts` | Target number of districts used to derive the major grid |
 | `params.streetDensity` | Density of secondary streets inside each district |
-| `params.buildingDensity` | How aggressively blocks should be filled with buildings |
+| `params.buildingDensity` | How many valid parcels receive buildings; low values leave more empty parcels, high values fill more of the city |
 
 Example:
 
@@ -53,7 +68,7 @@ const params = {
 };
 ```
 
-After changing values in `main.js`, refresh the page.
+After changing defaults in `main.js`, refresh the page.
 
 ## Internal Tuning Variables
 
@@ -87,6 +102,8 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 | `BUILDING_PLACEMENT_ATTEMPTS` | Number of placement retries before giving up on a parcel |
 | `FALLBACK_SCAN_STEP` | Step size used when scanning a district for tiny fallback build spots |
 | `FALLBACK_CELL_SIZE` | Size of the emergency fallback parcel used in tight districts |
+| `getParcelSpan(buildingDensity)` | Controls how finely a block is subdivided into candidate parcels |
+| `getMaxBuildingCells(block, buildingDensity)` | Caps how many candidate parcels a block can produce for a given density |
 
 ### Renderer (`renderer/canvas.js`)
 
@@ -102,14 +119,16 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 1. `generator/districts.js` builds the major district grid and assigns district colors.
 2. `generator/streets.js` adds full-span secondary streets and dead ends inside each district.
 3. `generator/graph.js` converts street crossings and endpoints into an intersection graph.
-4. `generator/buildings.js` derives buildable parcels from the street layout and fills them with compound buildings.
-5. `renderer/canvas.js` draws districts, streets, buildings, and debug intersections.
+4. `generator/buildings.js` derives buildable parcels from the street layout, accounts for dead ends and street clearance, and fills a density-dependent share of those parcels with compound buildings.
+5. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
+6. `renderer/canvas.js` draws districts, streets, buildings, and debug intersections.
 
 ## Architecture
 
 ```
 generator/     — Procedural city generation (districts, streets, buildings, graph)
 renderer/      — Stateless Canvas renderer
+ui/            — Control panel and parameter application flow
 scripts/       — Local development helpers (including Playwright screenshot checks)
 main.js        — Game loop and high-level parameters
 ```

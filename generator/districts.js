@@ -1,4 +1,4 @@
-const MAJOR_STREET_WIDTH = 8;
+const MAJOR_STREET_WIDTH = 20;
 
 const DISTRICT_COLORS = [
   '#355c7d',

@@ -25,7 +25,20 @@ Original prompt: od czego zaczniej implementacje? zrób to
 - Updated `renderer/canvas.js` to draw glowing walkers and their recent movement trail above the city.
 - Added a data-URL favicon to `index.html` to avoid browser 404 noise during local checks.
 - Verified a clean browser run at `http://127.0.0.1:8082/index.html` with `node scripts/local_playwright_check.mjs http://127.0.0.1:8082/index.html output/web-game-characters`: screenshot saved to `output/web-game-characters/shot-0.png`, state saved to `output/web-game-characters/state-0.json`, and no console errors were recorded in the fresh output directory.
+- Added `ui/interaction.js` for canvas hit testing, walker selection, Escape-to-clear, and street-click destination assignment to the nearest street-graph node.
+- Wired interaction state into `main.js` and `render_game_to_text`, including selected walker id, target node id, and per-character `pathLength` for easier reroute debugging.
+- Updated `renderer/canvas.js` with a selected-walker ring, target marker, and an in-canvas interaction hint so the new control flow is visible without external UI.
+- Verified interaction flow in Chromium at `http://127.0.0.1:8082/index.html` with a Playwright click-through: selected walker `0`, clicked street node `9`, and confirmed in `output/web-game-interaction/state-0.json` that the interaction state stayed selected and the walker's `pathLength` changed from `7` to `19` after rerouting. Screenshot saved to `output/web-game-interaction/shot-0.png`; no console errors were recorded.
+- Extended the current interaction MVP so clicking another walker while one is selected assigns a `{ type: 'character', characterId }` follow target instead of switching selection.
+- Added follow-target overlay rendering in `renderer/canvas.js` and exposed `targetCharacterId` plus per-character `destination` in `render_game_to_text`.
+- Verified follow assignment in Chromium at `http://127.0.0.1:8082/index.html`: selected walker `0`, clicked walker `1`, and confirmed in `output/web-game-follow/state-0.json` that `interaction.targetCharacterId === 1` and walker `0` now has `destination.type === "character"`. Screenshot saved to `output/web-game-follow/shot-0.png`; no console errors were recorded.
+- Reworked target picking so both street reroutes and walker follow use a confirmation step: first click previews the target (`mode: "confirming"`), second click on that same target commits it.
+- For follow confirmation, `setCharacterDestination` now clears the old path first so chase begins immediately after the confirming click instead of waiting for the previous route to finish.
+- Verified both confirmation flows in Chromium at `http://127.0.0.1:8082/index.html`: `output/web-game-confirmation/state-0.json` shows that street preview leaves `destination === null` until the second click, and follow preview leaves `destination === null` until the second click sets `destination.type === "character"`. Screenshot saved to `output/web-game-confirmation/shot-0.png`; no console errors were recorded.
+- Replaced the direct-selection shortcut with the planned action-menu flow in `ui/interaction.js`: clicking a walker now opens `mode: "menu_open"`, selecting `Choose destination` enters `mode: "picking_destination"`, and destination preview/confirm still uses the two-click confirmation step.
+- Added popup menu rendering in `renderer/canvas.js`, including hover highlighting and the updated hint copy for `menu_open` vs `picking_destination`.
+- Verified the full menu flow in Chromium at `http://127.0.0.1:8082/index.html`: `output/web-game-action-menu/state-0.json` shows `idle -> menu_open -> picking_destination`, then successful street confirmation back to `menu_open`, and the same menu-driven flow for follow assignment ending with `destination.type === "character"`. Screenshot saved to `output/web-game-action-menu/shot-0.png`; no console errors were recorded.
 
 TODO
-- Next likely milestone: character selection and click-to-set destination / follow behavior.
+- Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set and decide whether follow should be a dedicated menu item or remain a destination subtype.
 - Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.

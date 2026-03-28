@@ -125,16 +125,28 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 |---|---|
 | `CHARACTER_COLORS` | Repeating palette used for spawned walkers |
 | `TRAIL_LENGTH` | Maximum number of stored trail points per character |
-| `speed: rng.float(40, 100)` | Default movement speed range in pixels per second |
+| `speed: rng.float(3, 20)` | Default movement speed range in pixels per second |
 
 To change how fast characters move, edit the `speed` assignment inside `createCharacter(...)` in `entities/character.js`.
 Examples:
 
 ```js
-speed: rng.float(20, 55), // slower range
-speed: rng.float(80, 140), // faster range
+speed: rng.float(1, 8), // slower range
+speed: rng.float(20, 45), // faster range
 speed: 70, // same speed for every character
 ```
+
+## Character Interaction
+
+Current MVP interaction on the canvas:
+
+1. Click a walker to select it.
+2. Use the popup menu to choose `Choose destination`.
+3. Click a street once to preview a node destination, then click the same street target again to confirm it.
+4. Or click another walker once to preview follow / chase, then click that same walker again to confirm it.
+5. Press `Esc` or click the selected walker again to clear the selection.
+
+The interaction layer maps a street click to the nearest reachable street-graph node, keeps it as a preview target, and only commits the reroute on the second matching click. After a destination is confirmed, the selected walker returns to the popup-menu state so another action can be chosen immediately.
 
 ## How City Generation Works
 
@@ -145,7 +157,8 @@ speed: 70, // same speed for every character
 5. `pathfinding/bfs.js` finds shortest routes across the intersection graph.
 6. `entities/character.js` spawns walkers, assigns reachable targets, advances them segment-by-segment, and keeps a short visual trail.
 7. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
-8. `renderer/canvas.js` draws districts, streets, buildings, moving characters, and debug intersections.
+8. `ui/interaction.js` handles canvas hit testing, walker selection, and street-click rerouting.
+9. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, and debug intersections.
 
 ## Architecture
 
@@ -154,7 +167,7 @@ generator/     — Procedural city generation (districts, streets, buildings, gr
 pathfinding/   — BFS route finding on the street graph
 entities/      — Character spawning and movement updates
 renderer/      — Stateless Canvas renderer
-ui/            — Control panel and parameter application flow
+ui/            — Control panel plus canvas interaction flow
 scripts/       — Local development helpers (including Playwright screenshot checks)
 main.js        — Game loop and high-level parameters
 ```

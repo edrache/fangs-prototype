@@ -1,8 +1,9 @@
-import { createCharacter, updateCharacter } from './entities/character.js';
+import { createCharacter, setCharacterDestination, updateCharacter } from './entities/character.js';
 import { generateCity } from './generator/city.js';
 import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
+import { createInteractionController } from './ui/interaction.js';
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 700;
@@ -30,6 +31,19 @@ const state = {
   timeMs: 0,
   lastTickMs: performance.now(),
 };
+
+const interaction = createInteractionController({
+  canvas,
+  getCity: () => state.city,
+  getCharacters: () => state.characters,
+  onAssignDestination(character, destination) {
+    setCharacterDestination(character, destination);
+    render();
+  },
+  onChange() {
+    render();
+  },
+});
 
 const controls = createControls({
   mount: controlPanel,
@@ -68,7 +82,7 @@ function updateCharacters(dtSeconds) {
 }
 
 function render() {
-  renderCity(ctx, state.city, state.characters);
+  renderCity(ctx, state.city, state.characters, interaction.getState());
 }
 
 function stepSimulation(deltaMs) {
@@ -94,6 +108,7 @@ function regenerate() {
   state.frame = 0;
   state.timeMs = 0;
   state.lastTickMs = performance.now();
+  interaction.reset();
   seedReadout.textContent =
     `seed ${params.seed} · districts ${state.city.districts.length} · streets ${state.city.meta.totalStreetCount} · buildings ${state.city.meta.buildingCount} · nodes ${state.city.intersections.length} · chars ${state.characters.length}`;
   controls.setAppliedValues(params);
@@ -121,6 +136,7 @@ window.render_game_to_text = () => JSON.stringify({
   characterCount: state.characters.length,
   timeMs: state.timeMs,
   frame: state.frame,
+  interaction: interaction.getState(),
   districts: (state.city?.districts ?? []).map((district) => ({
     id: district.id,
     color: district.color,
@@ -138,6 +154,8 @@ window.render_game_to_text = () => JSON.stringify({
     from: character.from,
     to: character.to,
     progress: Number(character.progress.toFixed(3)),
+    pathLength: character.path.length,
+    destination: character.destination,
     trail: character.trail.slice(0, 10).map((point) => ({
       x: Number(point.x.toFixed(2)),
       y: Number(point.y.toFixed(2)),

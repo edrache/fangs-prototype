@@ -264,6 +264,12 @@ export function createCharacter(intersections, rng, colorIndex) {
 
 export function setCharacterDestination(char, destination) {
   char.destination = destination ?? null;
+
+  if (destination?.type === 'character') {
+    char.path = [];
+    char.to = char.from;
+    char.progress = 0;
+  }
 }
 
 export function updateCharacter(char, dt, intersections, characters = []) {

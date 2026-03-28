@@ -5,10 +5,12 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 ## Stage 1 — City Generator
 
 - Orthogonal street grid divided into color-coded districts
+- Top-left player-owned district highlighted with a dark red border
 - Compound buildings (L/T/U shapes) filling city blocks
 - Dead-end secondary streets
 - Player and NPC characters navigating the street graph with BFS
 - Seed-based deterministic city generation and initial character placement
+- Player characters spawning inside the player-owned district
 
 ## Running
 
@@ -71,6 +73,8 @@ Below the canvas, the app also shows a dedicated player-character panel:
 | `Character N` cards | One card per player-controlled character |
 | Status line | Shows `idle`, `moving`, `target: node N`, or `following: character N` |
 | Card click | Opens the same action menu as clicking that player character on the map |
+
+The top-left district is reserved as the player district. It is outlined in dark red as a topmost overlay so the border stays visible, and the initial player-controlled walkers spawn on street nodes inside that district after every regeneration.
 
 ### Main runtime parameters (`main.js`)
 
@@ -180,17 +184,18 @@ The interaction layer maps a street click to the nearest reachable street-graph 
 
 ## How City Generation Works
 
-1. `generator/districts.js` builds the major district grid and assigns district colors.
+1. `generator/districts.js` builds the major district grid, assigns district colors, and marks the top-left district as player-owned.
 2. `generator/streets.js` adds full-span secondary streets and dead ends inside each district.
 3. `generator/graph.js` converts street crossings and endpoints into an intersection graph.
 4. `generator/buildings.js` derives buildable parcels from the street layout, accounts for dead ends and street clearance, and fills a density-dependent share of those parcels with compound buildings.
 5. `pathfinding/bfs.js` finds shortest routes across the intersection graph.
-6. `entities/character.js` spawns characters, marks the first `PLAYER_COUNT` as player-controlled, advances them segment-by-segment, and keeps a short visual trail.
+6. `entities/character.js` advances characters segment-by-segment, keeps a short visual trail, and uses the player / NPC split established in `main.js`.
 7. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
 8. `ui/timeControls.js` manages simulation speed buttons, keyboard shortcuts, and the active time-scale state.
 9. `ui/interaction.js` handles canvas hit testing, player-character selection, and street-click rerouting.
 10. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection and movement state.
-11. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, and debug intersections.
+11. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, the player-district border, and debug intersections.
+12. `main.js` regenerates the city, spawns player characters inside the player-owned district, and exposes debug state through `render_game_to_text()`.
 
 ## Architecture
 

@@ -95,6 +95,7 @@ export function generateDistricts({ width, height, districtCount, rng }) {
       districts.push({
         id,
         color: DISTRICT_COLORS[id % DISTRICT_COLORS.length],
+        isPlayerOwned: id === 0,
         bounds: {
           x: left,
           y: top,

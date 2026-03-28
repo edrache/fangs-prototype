@@ -93,10 +93,30 @@ function createCharacters(city, seed, count) {
   const rng = createRNG(seed ^ 0x9e3779b9);
   const characterCount = Math.min(count, city.intersections.length);
   const characters = [];
+  const playerDistrict = city.districts.find((district) => district.isPlayerOwned);
+  const playerNodes = playerDistrict
+    ? city.intersections.filter(
+        (node) =>
+          node.x >= playerDistrict.bounds.x &&
+          node.x <= playerDistrict.bounds.x + playerDistrict.bounds.w &&
+          node.y >= playerDistrict.bounds.y &&
+          node.y <= playerDistrict.bounds.y + playerDistrict.bounds.h,
+      )
+    : [];
 
   for (let index = 0; index < characterCount; index += 1) {
     const character = createCharacter(city.intersections, rng, index);
     character.isPlayer = index < PLAYER_COUNT;
+
+    if (character.isPlayer && playerNodes.length > 0) {
+      const startNode = playerNodes[rng.int(0, playerNodes.length - 1)];
+      character.pos = { x: startNode.x, y: startNode.y };
+      character.from = startNode.id;
+      character.to = startNode.id;
+      character.path = [];
+      character.progress = 0;
+    }
+
     characters.push(character);
   }
 
@@ -174,6 +194,7 @@ window.render_game_to_text = () => JSON.stringify({
   districts: (state.city?.districts ?? []).map((district) => ({
     id: district.id,
     color: district.color,
+    isPlayerOwned: district.isPlayerOwned,
     bounds: district.bounds,
   })),
   buildingsSample: (state.city?.buildings ?? []).slice(0, 6),

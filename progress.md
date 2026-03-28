@@ -51,6 +51,11 @@ Original prompt: od czego zaczniej implementacje? zrób to
 - Added a dedicated `#player-panel` below the canvas and wired `ui/playerPanel.js` into the main render loop so player cards stay synced with selection and movement state.
 - Updated character rendering so player-controlled walkers appear as glowing diamonds while NPCs remain circles.
 - Verified the player-character slice in Chromium at `http://127.0.0.1:8084/index.html`: `output/web-game-player-panel-smoke/state-0.json` confirms exactly 3 player cards and `isPlayer === true` for characters `0..2`, while a Playwright DOM click on the first player card opened the same `menu_open` interaction state as a canvas click.
+- Added `isPlayerOwned` to districts so the top-left district is explicitly marked as player-owned in the city data model and in `render_game_to_text`.
+- Updated `renderer/canvas.js` to draw a dark red inset border around the player-owned district as a topmost render layer so it stays visible above the rest of the scene.
+- Changed `createCharacters()` so player-controlled characters spawn on intersections inside the player-owned district while NPCs still spawn across the whole city.
+- Next milestone completed: player district ownership and player-character spawning in the player district.
+- Re-ran the local browser smoke check on 2026-03-28 against `http://127.0.0.1:8085/index.html`: `output/web-game-player-district-smoke/shot-0.png` shows the dark red player-district border in the top-left district, `output/web-game-player-district-smoke/state-0.json` reports exactly one `isPlayerOwned === true` district, and player characters `0..2` all spawn inside that district with no `errors-0.json` file produced.
 
 TODO
 - Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.

@@ -30,6 +30,20 @@ function fillDistrict(ctx, district) {
   ctx.globalAlpha = 1;
 }
 
+function drawPlayerDistrictBorder(ctx, district) {
+  const inset = 1.5;
+  ctx.save();
+  ctx.strokeStyle = '#8b0000';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(
+    district.bounds.x + inset,
+    district.bounds.y + inset,
+    district.bounds.w - inset * 2,
+    district.bounds.h - inset * 2,
+  );
+  ctx.restore();
+}
+
 function drawStreet(ctx, street) {
   ctx.fillStyle = STREET_FILL;
   ctx.fillRect(street.x1, street.y1, street.x2 - street.x1, street.y2 - street.y1);
@@ -342,5 +356,10 @@ export function renderCity(ctx, city, characters = [], interactionState = null) 
   drawIntersections(ctx, city.intersections);
   drawCharacters(ctx, characters);
   drawInteractionOverlay(ctx, city, characters, interactionState);
+  for (const district of city.districts) {
+    if (district.isPlayerOwned) {
+      drawPlayerDistrictBorder(ctx, district);
+    }
+  }
   drawGridHint(ctx, city, characters);
 }

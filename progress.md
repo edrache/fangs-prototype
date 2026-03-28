@@ -44,7 +44,14 @@ Original prompt: od czego zaczniej implementacje? zrób to
 - Fixed a keyboard-focus snag in the new controls by blurring the clicked speed/toggle buttons, so `0`-`4` shortcuts continue to work after mouse interaction.
 - Verified in Chromium at `http://127.0.0.1:8083/index.html` that `1×`, `■`, `2×`, and `10×` all switch active state correctly, that pause remains frozen after activation, and that collapsing the panel hides `.controls-left/.controls-right` while keeping the time row visible.
 - Captured fresh artifacts: `output/web-game-time-controls-smoke/shot-0.png`, `output/web-game-time-controls-smoke/state-0.json`, and full-page layout screenshot `output/web-game-time-controls-full.png`.
+- Re-ran the local Playwright smoke check on 2026-03-28 against `http://127.0.0.1:8080/index.html` with `node scripts/local_playwright_check.mjs http://127.0.0.1:8080/index.html output/web-game-test-run`.
+- Verified fresh artifacts in `output/web-game-test-run`: `shot-0.png` shows the city canvas rendering correctly, `state-0.json` reports 9 districts, 73 streets, 192 buildings, 272 nodes, and 10 active characters, and no `errors-0.json` file was produced.
+- Added `isPlayer` to the character model, marked the first three spawned walkers as player-controlled, and exposed that flag in `render_game_to_text`.
+- Restricted action-menu opening to player characters while preserving follow/chase targeting during destination picking.
+- Added a dedicated `#player-panel` below the canvas and wired `ui/playerPanel.js` into the main render loop so player cards stay synced with selection and movement state.
+- Updated character rendering so player-controlled walkers appear as glowing diamonds while NPCs remain circles.
+- Verified the player-character slice in Chromium at `http://127.0.0.1:8084/index.html`: `output/web-game-player-panel-smoke/state-0.json` confirms exactly 3 player cards and `isPlayer === true` for characters `0..2`, while a Playwright DOM click on the first player card opened the same `menu_open` interaction state as a canvas click.
 
 TODO
-- Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set and decide whether follow should be a dedicated menu item or remain a destination subtype.
+- Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.
 - Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.

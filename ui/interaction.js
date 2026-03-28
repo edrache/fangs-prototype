@@ -64,6 +64,10 @@ function findCharacterAtPoint(characters, point) {
   return match;
 }
 
+function isPlayerCharacter(character) {
+  return character?.isPlayer === true;
+}
+
 function findDestinationNode(city, point) {
   if (!city) {
     return null;
@@ -214,6 +218,11 @@ export function createInteractionController({
   }
 
   function openMenuForCharacter(characterId) {
+    const character = getCharactersSafe().find((candidate) => candidate.id === characterId);
+    if (!isPlayerCharacter(character)) {
+      return;
+    }
+
     state.mode = 'menu_open';
     state.selectedCharacterId = characterId;
     state.hoveredMenuItemIndex = null;
@@ -256,7 +265,7 @@ export function createInteractionController({
     const hoveredCharacter = findCharacterAtPoint(characters, point);
 
     state.mousePos = point;
-    state.hoveredCharacterId = hoveredCharacter?.id ?? null;
+    state.hoveredCharacterId = isPlayerCharacter(hoveredCharacter) ? hoveredCharacter.id : null;
     state.hoveredMenuItemIndex =
       state.mode === 'menu_open' ? getMenuItemIndex(point, getMenuLayout()) : null;
     updateCursor();
@@ -348,7 +357,7 @@ export function createInteractionController({
     const selectedCharacter = getSelectedCharacter();
 
     if (state.mode === 'idle') {
-      if (clickedCharacter) {
+      if (isPlayerCharacter(clickedCharacter)) {
         openMenuForCharacter(clickedCharacter.id);
       }
       return;
@@ -364,7 +373,7 @@ export function createInteractionController({
         return;
       }
 
-      if (clickedCharacter) {
+      if (isPlayerCharacter(clickedCharacter)) {
         openMenuForCharacter(clickedCharacter.id);
       }
 
@@ -418,6 +427,7 @@ export function createInteractionController({
 
   return {
     clearSelection,
+    openMenuForCharacter,
     getState,
     reset,
     destroy() {

@@ -4,16 +4,19 @@ import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
 import { createInteractionController } from './ui/interaction.js';
+import { createPlayerPanel } from './ui/playerPanel.js';
 import { createTimeControls } from './ui/timeControls.js';
 
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 700;
+const PLAYER_COUNT = 3;
 
 const canvas = document.getElementById('city-canvas');
 const ctx = canvas.getContext('2d');
 const seedReadout = document.getElementById('seed-readout');
 const controlPanel = document.getElementById('control-panel');
 const regenerateButton = document.getElementById('regenerate-btn');
+const playerPanelMount = document.getElementById('player-panel');
 const timeControlsPanel = document.getElementById('time-controls');
 const panelToggle = document.getElementById('panel-toggle');
 const controlsEl = document.getElementById('controls');
@@ -46,6 +49,15 @@ const interaction = createInteractionController({
     render();
   },
   onChange() {
+    render();
+  },
+});
+
+const playerPanel = createPlayerPanel({
+  mount: playerPanelMount,
+  getCharacters: () => state.characters,
+  onSelectCharacter(characterId) {
+    interaction.openMenuForCharacter(characterId);
     render();
   },
 });
@@ -83,7 +95,9 @@ function createCharacters(city, seed, count) {
   const characters = [];
 
   for (let index = 0; index < characterCount; index += 1) {
-    characters.push(createCharacter(city.intersections, rng, index));
+    const character = createCharacter(city.intersections, rng, index);
+    character.isPlayer = index < PLAYER_COUNT;
+    characters.push(character);
   }
 
   return characters;
@@ -100,7 +114,9 @@ function updateCharacters(dtSeconds) {
 }
 
 function render() {
-  renderCity(ctx, state.city, state.characters, interaction.getState());
+  const interactionState = interaction.getState();
+  renderCity(ctx, state.city, state.characters, interactionState);
+  playerPanel.update(interactionState);
 }
 
 function stepSimulation(deltaMs) {
@@ -164,6 +180,7 @@ window.render_game_to_text = () => JSON.stringify({
   intersectionsSample: (state.city?.intersections ?? []).slice(0, 12),
   characters: state.characters.map((character) => ({
     id: character.id,
+    isPlayer: character.isPlayer,
     color: character.color,
     pos: {
       x: Number(character.pos.x.toFixed(2)),

@@ -109,13 +109,20 @@ function drawCharacters(ctx, characters) {
     ctx.shadowColor = character.color;
     ctx.shadowBlur = 10;
     ctx.fillStyle = character.color;
-    ctx.beginPath();
-    ctx.arc(character.pos.x, character.pos.y, CHARACTER_RADIUS, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.lineWidth = 1.5;
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
-    ctx.stroke();
+    ctx.lineWidth = 1.5;
+
+    if (character.isPlayer) {
+      ctx.translate(character.pos.x, character.pos.y);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-CHARACTER_RADIUS, -CHARACTER_RADIUS, CHARACTER_RADIUS * 2, CHARACTER_RADIUS * 2);
+      ctx.strokeRect(-CHARACTER_RADIUS, -CHARACTER_RADIUS, CHARACTER_RADIUS * 2, CHARACTER_RADIUS * 2);
+    } else {
+      ctx.beginPath();
+      ctx.arc(character.pos.x, character.pos.y, CHARACTER_RADIUS, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
     ctx.restore();
   }
 }
@@ -255,13 +262,13 @@ function drawInteractionHint(ctx, interactionState) {
   const isPicking = interactionState?.mode === 'picking_destination';
   const message = isSelecting
     ? isMenuOpen
-      ? 'Walker selected: choose an action from the popup menu.'
+      ? 'Player selected: choose an action from the popup menu.'
       : isPicking
       ? isFollowing
         ? 'Target previewed: click the same walker again to confirm follow.'
         : 'Target previewed: click the same street spot again to confirm reroute.'
-      : 'Walker selected.'
-    : 'Click a walker to open its action menu.';
+      : 'Player selected.'
+    : 'Click a player character to open its action menu.';
 
   ctx.save();
   ctx.fillStyle = 'rgba(12, 16, 28, 0.72)';

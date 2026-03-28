@@ -7,7 +7,7 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 - Orthogonal street grid divided into color-coded districts
 - Compound buildings (L/T/U shapes) filling city blocks
 - Dead-end secondary streets
-- Moving dot characters navigating the street graph with BFS
+- Player and NPC characters navigating the street graph with BFS
 - Seed-based deterministic city generation and initial character placement
 
 ## Running
@@ -64,6 +64,14 @@ Keyboard shortcuts mirror the buttons:
 | `3` | Set `4×` speed |
 | `4` | Set `10×` speed |
 
+Below the canvas, the app also shows a dedicated player-character panel:
+
+| Element | Description |
+|---|---|
+| `Character N` cards | One card per player-controlled character |
+| Status line | Shows `idle`, `moving`, `target: node N`, or `following: character N` |
+| Card click | Opens the same action menu as clicking that player character on the map |
+
 ### Main runtime parameters (`main.js`)
 
 These are still the default values loaded on page start:
@@ -72,6 +80,7 @@ These are still the default values loaded on page start:
 |---|---|
 | `CANVAS_WIDTH` | Canvas width in pixels |
 | `CANVAS_HEIGHT` | Canvas height in pixels |
+| `PLAYER_COUNT` | Number of spawned characters treated as player-controlled |
 | `params.seed` | Deterministic seed. Same seed + same params = same city |
 | `params.districts` | Target number of districts used to derive the major grid |
 | `params.streetDensity` | Density of secondary streets inside each district |
@@ -161,13 +170,13 @@ speed: 70, // same speed for every character
 
 Current MVP interaction on the canvas:
 
-1. Click a walker to select it.
+1. Click a player character to select it.
 2. Use the popup menu to choose `Choose destination`.
 3. Click a street once to preview a node destination, then click the same street target again to confirm it.
-4. Or click another walker once to preview follow / chase, then click that same walker again to confirm it.
-5. Press `Esc` or click the selected walker again to clear the selection.
+4. Or click another character once to preview follow / chase, then click that same character again to confirm it.
+5. Press `Esc` or click the selected player character again to clear the selection.
 
-The interaction layer maps a street click to the nearest reachable street-graph node, keeps it as a preview target, and only commits the reroute on the second matching click. After a destination is confirmed, the selected walker returns to the popup-menu state so another action can be chosen immediately.
+The interaction layer maps a street click to the nearest reachable street-graph node, keeps it as a preview target, and only commits the reroute on the second matching click. After a destination is confirmed, the selected player character returns to the popup-menu state so another action can be chosen immediately. NPCs remain visible and can still be used as follow targets, but they do not open the action menu.
 
 ## How City Generation Works
 
@@ -176,11 +185,12 @@ The interaction layer maps a street click to the nearest reachable street-graph 
 3. `generator/graph.js` converts street crossings and endpoints into an intersection graph.
 4. `generator/buildings.js` derives buildable parcels from the street layout, accounts for dead ends and street clearance, and fills a density-dependent share of those parcels with compound buildings.
 5. `pathfinding/bfs.js` finds shortest routes across the intersection graph.
-6. `entities/character.js` spawns walkers, assigns reachable targets, advances them segment-by-segment, and keeps a short visual trail.
+6. `entities/character.js` spawns characters, marks the first `PLAYER_COUNT` as player-controlled, advances them segment-by-segment, and keeps a short visual trail.
 7. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
 8. `ui/timeControls.js` manages simulation speed buttons, keyboard shortcuts, and the active time-scale state.
-9. `ui/interaction.js` handles canvas hit testing, walker selection, and street-click rerouting.
-10. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, and debug intersections.
+9. `ui/interaction.js` handles canvas hit testing, player-character selection, and street-click rerouting.
+10. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection and movement state.
+11. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, and debug intersections.
 
 ## Architecture
 

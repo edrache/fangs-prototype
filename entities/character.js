@@ -251,6 +251,7 @@ export function createCharacter(intersections, rng, colorIndex) {
     color,
     trail: [],
     destination: null,
+    isPlayer: false,
     rng: createLocalRNG(rng.int(1, 0x7fffffff)),
   };
 

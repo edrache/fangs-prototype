@@ -1,0 +1,71 @@
+<h2>Gdzie i jak pojawia się menu akcji?</h2>
+<p class="subtitle">Po kliknięciu postaci na mapie — jak gracz widzi dostępne akcje?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="popup" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px;display:flex;align-items:center;justify-content:center;min-height:140px;">
+      <div style="position:relative;width:180px;height:120px;">
+        <!-- canvas bg -->
+        <div style="position:absolute;inset:0;background:#1a1a2e;border-radius:6px;"></div>
+        <!-- dot character -->
+        <div style="position:absolute;left:85px;top:55px;width:10px;height:10px;border-radius:50%;background:#e06c75;box-shadow:0 0 6px #e06c75;"></div>
+        <!-- selection ring -->
+        <div style="position:absolute;left:78px;top:48px;width:24px;height:24px;border-radius:50%;border:2px solid #e06c75;opacity:0.7;"></div>
+        <!-- popup menu -->
+        <div style="position:absolute;left:95px;top:30px;background:#111827;border:1px solid #374151;border-radius:5px;padding:4px 0;min-width:100px;font-size:10px;font-family:monospace;">
+          <div style="padding:4px 10px;color:#9ca3af;font-size:9px;letter-spacing:0.05em;text-transform:uppercase;">akcje</div>
+          <div style="padding:5px 10px;color:#e5e7eb;cursor:pointer;border-left:2px solid #e06c75;">↗ Wybierz cel</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Popup przy postaci</h3>
+      <p>Menu pojawia się bezpośrednio obok klikniętej postaci na canvas</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="panel" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px;display:flex;align-items:center;justify-content:center;min-height:140px;">
+      <div style="display:flex;gap:8px;align-items:flex-start;width:220px;">
+        <!-- mini canvas -->
+        <div style="flex:1;background:#1a1a2e;border-radius:6px;height:100px;position:relative;">
+          <div style="position:absolute;left:45px;top:45px;width:10px;height:10px;border-radius:50%;background:#e06c75;box-shadow:0 0 6px #e06c75;"></div>
+          <div style="position:absolute;left:38px;top:38px;width:24px;height:24px;border-radius:50%;border:2px solid #e06c75;opacity:0.7;"></div>
+        </div>
+        <!-- side panel -->
+        <div style="width:80px;background:#111827;border:1px solid #374151;border-radius:5px;padding:6px;font-size:9px;font-family:monospace;">
+          <div style="color:#e06c75;margin-bottom:4px;font-size:9px;">● Postać #3</div>
+          <div style="color:#9ca3af;font-size:8px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;">Akcje</div>
+          <div style="background:#1f2937;padding:3px 5px;border-radius:3px;color:#e5e7eb;border-left:2px solid #e06c75;">↗ Cel</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Panel boczny</h3>
+      <p>Stały panel obok canvas z info o wybranej postaci i listą akcji</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="bottom" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px;display:flex;align-items:center;justify-content:center;min-height:140px;">
+      <div style="display:flex;flex-direction:column;gap:6px;width:200px;">
+        <!-- mini canvas -->
+        <div style="background:#1a1a2e;border-radius:6px;height:80px;position:relative;">
+          <div style="position:absolute;left:95px;top:35px;width:10px;height:10px;border-radius:50%;background:#e06c75;box-shadow:0 0 6px #e06c75;"></div>
+          <div style="position:absolute;left:88px;top:28px;width:24px;height:24px;border-radius:50%;border:2px solid #e06c75;opacity:0.7;"></div>
+        </div>
+        <!-- bottom bar -->
+        <div style="background:#111827;border:1px solid #374151;border-radius:5px;padding:5px 8px;display:flex;align-items:center;gap:8px;font-size:9px;font-family:monospace;">
+          <span style="color:#e06c75;">● #3</span>
+          <span style="background:#1f2937;border-left:2px solid #e06c75;padding:2px 7px;border-radius:2px;color:#e5e7eb;">↗ Wybierz cel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Pasek dolny</h3>
+      <p>Poziomy pasek pod canvas z akcjami dla zaznaczonej postaci</p>
+    </div>
+  </div>
+
+</div>

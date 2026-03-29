@@ -1,0 +1,98 @@
+<h2>City visual style</h2>
+<p class="subtitle">How should the city look on screen?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="topdown-clean" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;padding:16px;font-family:monospace;">
+      <svg width="100%" height="140" viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg">
+        <!-- streets -->
+        <rect x="0" y="0" width="260" height="140" fill="#1a1a2e"/>
+        <rect x="0" y="60" width="260" height="20" fill="#2a2a4a"/>
+        <rect x="110" y="0" width="20" height="140" fill="#2a2a4a"/>
+        <!-- buildings -->
+        <rect x="10" y="10" width="40" height="45" fill="#4a4a8a" rx="2"/>
+        <rect x="60" y="15" width="35" height="38" fill="#3a6a8a" rx="2"/>
+        <rect x="140" y="8" width="50" height="46" fill="#4a4a8a" rx="2"/>
+        <rect x="200" y="12" width="40" height="42" fill="#5a3a8a" rx="2"/>
+        <rect x="10" y="88" width="35" height="42" fill="#3a6a8a" rx="2"/>
+        <rect x="55" y="82" width="42" height="48" fill="#4a4a8a" rx="2"/>
+        <rect x="140" y="85" width="45" height="45" fill="#5a3a8a" rx="2"/>
+        <rect x="200" y="88" width="38" height="42" fill="#4a4a8a" rx="2"/>
+        <!-- character dot -->
+        <circle cx="150" cy="70" r="4" fill="#ff6b6b"/>
+        <circle cx="180" cy="70" r="4" fill="#ff6b6b"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>A — Top-down, clean geometry</h3>
+      <p>Flat rectangles, dark background, colored districts. Minimalist and readable.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="topdown-pixel" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#111;padding:16px;">
+      <svg width="100%" height="140" viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+        <rect x="0" y="0" width="260" height="140" fill="#0f0f0f"/>
+        <!-- pixel grid streets -->
+        <rect x="0" y="56" width="260" height="8" fill="#222"/>
+        <rect x="0" y="64" width="260" height="8" fill="#1a1a1a"/>
+        <rect x="108" y="0" width="8" height="140" fill="#222"/>
+        <rect x="116" y="0" width="8" height="140" fill="#1a1a1a"/>
+        <!-- pixel buildings -->
+        <rect x="8" y="8" width="32" height="48" fill="#2d5a27"/>
+        <rect x="8" y="8" width="8" height="8" fill="#3d6a37"/>
+        <rect x="16" y="8" width="8" height="8" fill="#3d6a37"/>
+        <rect x="48" y="16" width="40" height="40" fill="#27455a"/>
+        <rect x="48" y="16" width="8" height="8" fill="#37556a"/>
+        <rect x="130" y="8" width="48" height="48" fill="#5a2727"/>
+        <rect x="130" y="8" width="8" height="8" fill="#6a3737"/>
+        <rect x="188" y="12" width="36" height="44" fill="#2d5a27"/>
+        <!-- pixel chars -->
+        <rect x="120" y="60" width="8" height="8" fill="#ffff00"/>
+        <rect x="148" y="60" width="8" height="8" fill="#ffff00"/>
+        <!-- pixel buildings bottom -->
+        <rect x="8" y="80" width="36" height="48" fill="#27455a"/>
+        <rect x="52" y="72" width="44" height="56" fill="#5a2727"/>
+        <rect x="130" y="76" width="40" height="52" fill="#2d5a27"/>
+        <rect x="192" y="80" width="36" height="48" fill="#27455a"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>B — Pixel art / retro</h3>
+      <p>8-bit aesthetic, pixel grid, bright accent colors. Nostalgic feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="topdown-neon" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#050510;padding:16px;">
+      <svg width="100%" height="140" viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="260" height="140" fill="#050510"/>
+        <!-- neon streets -->
+        <rect x="0" y="58" width="260" height="24" fill="#0a0a20"/>
+        <line x1="0" y1="58" x2="260" y2="58" stroke="#00ffe0" stroke-width="1" opacity="0.6"/>
+        <line x1="0" y1="82" x2="260" y2="82" stroke="#00ffe0" stroke-width="1" opacity="0.6"/>
+        <rect x="108" y="0" width="24" height="140" fill="#0a0a20"/>
+        <line x1="108" y1="0" x2="108" y2="140" stroke="#00ffe0" stroke-width="1" opacity="0.6"/>
+        <line x1="132" y1="0" x2="132" y2="140" stroke="#00ffe0" stroke-width="1" opacity="0.6"/>
+        <!-- neon buildings -->
+        <rect x="8" y="8" width="44" height="46" fill="#0d0d25" stroke="#ff00aa" stroke-width="1"/>
+        <rect x="60" y="14" width="36" height="40" fill="#0d0d25" stroke="#aa00ff" stroke-width="1"/>
+        <rect x="140" y="6" width="52" height="48" fill="#0d0d25" stroke="#ff00aa" stroke-width="1"/>
+        <rect x="200" y="10" width="40" height="44" fill="#0d0d25" stroke="#00ffe0" stroke-width="1"/>
+        <rect x="8" y="90" width="40" height="40" fill="#0d0d25" stroke="#aa00ff" stroke-width="1"/>
+        <rect x="56" y="86" width="44" height="44" fill="#0d0d25" stroke="#ff00aa" stroke-width="1"/>
+        <rect x="140" y="88" width="48" height="42" fill="#0d0d25" stroke="#00ffe0" stroke-width="1"/>
+        <rect x="198" y="90" width="40" height="40" fill="#0d0d25" stroke="#aa00ff" stroke-width="1"/>
+        <!-- neon chars -->
+        <circle cx="140" cy="70" r="5" fill="#ff00aa" opacity="0.9"/>
+        <circle cx="180" cy="70" r="5" fill="#00ffe0" opacity="0.9"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>C — Neon / cyberpunk</h3>
+      <p>Dark background, glowing outlines, neon accents. Atmospheric and stylized.</p>
+    </div>
+  </div>
+
+</div>

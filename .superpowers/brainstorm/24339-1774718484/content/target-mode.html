@@ -1,0 +1,77 @@
+<h2>Tryb wyboru celu</h2>
+<p class="subtitle">Co widzi gracz po kliknięciu "Wybierz cel"? Jak canvas sygnalizuje, że czeka na kliknięcie?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="cursor" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px;display:flex;align-items:center;justify-content:center;min-height:160px;">
+      <div style="position:relative;width:200px;height:130px;">
+        <div style="position:absolute;inset:0;background:#1a1a2e;border-radius:6px;"></div>
+        <!-- selected char -->
+        <div style="position:absolute;left:60px;top:60px;width:10px;height:10px;border-radius:50%;background:#e06c75;box-shadow:0 0 6px #e06c75;"></div>
+        <div style="position:absolute;left:53px;top:53px;width:24px;height:24px;border-radius:50%;border:2px solid #e06c75;opacity:0.7;"></div>
+        <!-- crosshair cursor at hover position -->
+        <div style="position:absolute;left:130px;top:40px;width:16px;height:16px;">
+          <div style="position:absolute;left:7px;top:0;width:2px;height:16px;background:#61dafb;opacity:0.9;"></div>
+          <div style="position:absolute;left:0;top:7px;width:16px;height:2px;background:#61dafb;opacity:0.9;"></div>
+          <div style="position:absolute;left:4px;top:4px;width:8px;height:8px;border-radius:50%;border:1.5px solid #61dafb;opacity:0.6;"></div>
+        </div>
+        <!-- subtle overlay hint -->
+        <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:8px;color:#61dafb;font-family:monospace;letter-spacing:0.05em;">kliknij cel</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Zmiana kursora + hint</h3>
+      <p>Kursor zmienia się na celownik, mały napis "kliknij cel" na canvas. Brak zmian w wyglądzie mapy.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="dim" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px;display:flex;align-items:center;justify-content:center;min-height:160px;">
+      <div style="position:relative;width:200px;height:130px;">
+        <!-- dimmed canvas -->
+        <div style="position:absolute;inset:0;background:#1a1a2e;border-radius:6px;opacity:0.5;"></div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);border-radius:6px;"></div>
+        <!-- selected char stays bright -->
+        <div style="position:absolute;left:60px;top:60px;width:10px;height:10px;border-radius:50%;background:#e06c75;box-shadow:0 0 8px #e06c75;"></div>
+        <div style="position:absolute;left:53px;top:53px;width:24px;height:24px;border-radius:50%;border:2px solid #e06c75;opacity:0.9;"></div>
+        <!-- crosshair cursor -->
+        <div style="position:absolute;left:130px;top:40px;width:16px;height:16px;">
+          <div style="position:absolute;left:7px;top:0;width:2px;height:16px;background:#61dafb;opacity:0.9;"></div>
+          <div style="position:absolute;left:0;top:7px;width:16px;height:2px;background:#61dafb;opacity:0.9;"></div>
+        </div>
+        <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:8px;color:#61dafb;font-family:monospace;opacity:0.9;">kliknij cel</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Przyciemnienie mapy</h3>
+      <p>Canvas lekko przyciemniany (overlay), zaznaczona postać zostaje jasna. Wyraźny sygnał zmiany trybu.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="line" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:16px;display:flex;align-items:center;justify-content:center;min-height:160px;">
+      <div style="position:relative;width:200px;height:130px;">
+        <div style="position:absolute;inset:0;background:#1a1a2e;border-radius:6px;"></div>
+        <!-- selected char -->
+        <div style="position:absolute;left:60px;top:60px;width:10px;height:10px;border-radius:50%;background:#e06c75;box-shadow:0 0 6px #e06c75;"></div>
+        <div style="position:absolute;left:53px;top:53px;width:24px;height:24px;border-radius:50%;border:2px solid #e06c75;opacity:0.7;"></div>
+        <!-- dashed line to cursor -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%;">
+          <line x1="65" y1="65" x2="140" y2="42" stroke="#61dafb" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.7"/>
+        </svg>
+        <!-- cursor dot -->
+        <div style="position:absolute;left:133px;top:35px;width:14px;height:14px;">
+          <div style="position:absolute;left:6px;top:0;width:2px;height:14px;background:#61dafb;opacity:0.9;"></div>
+          <div style="position:absolute;left:0;top:6px;width:14px;height:2px;background:#61dafb;opacity:0.9;"></div>
+        </div>
+        <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:8px;color:#61dafb;font-family:monospace;">kliknij cel</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Linia od postaci do kursora</h3>
+      <p>Przerywana linia ciągnie się od postaci do pozycji myszy. Bardzo czytelny feedback gdzie gracz celuje.</p>
+    </div>
+  </div>
+
+</div>

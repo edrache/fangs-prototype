@@ -1,0 +1,122 @@
+<h2>Gdzie umieścić panel postaci gracza?</h2>
+<p class="subtitle">Wybierz miejsce w interfejsie dla panelu 3 postaci gracza</p>
+
+<div class="cards">
+
+  <!-- Option A: below canvas -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;flex-direction:column;gap:4px;padding:12px;background:#0a0e1a;border-radius:8px;font-size:10px;font-family:monospace;">
+        <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;padding:8px 10px;color:#9ca6c7;">
+          ▲ &nbsp;<span style="color:#d9e1ff">FANGS PROTOTYPE</span> &nbsp;·&nbsp; sliders... &nbsp;·&nbsp; [regenerate]
+        </div>
+        <div style="background:#0d1525;border:1px solid rgba(160,175,218,0.18);border-radius:8px;height:130px;display:flex;align-items:center;justify-content:center;color:#3a4766;font-size:11px;">
+          canvas (mapa)
+        </div>
+        <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;padding:8px;display:flex;gap:6px;">
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:7px;border:1px solid rgba(255,107,107,0.4);">
+            <div style="width:10px;height:10px;background:#ff6b6b;border-radius:50%;margin-bottom:4px;"></div>
+            <div style="color:#d9e1ff;font-size:9px;">Postać 1</div>
+            <div style="color:#9ca6c7;font-size:8px;margin-top:2px;">bezczynna</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:7px;border:1px solid rgba(107,255,184,0.4);">
+            <div style="width:10px;height:10px;background:#6bffb8;border-radius:50%;margin-bottom:4px;"></div>
+            <div style="color:#d9e1ff;font-size:9px;">Postać 2</div>
+            <div style="color:#9ca6c7;font-size:8px;margin-top:2px;">w ruchu</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:7px;border:1px solid rgba(255,208,107,0.4);">
+            <div style="width:10px;height:10px;background:#ffd06b;border-radius:50%;margin-bottom:4px;"></div>
+            <div style="color:#d9e1ff;font-size:9px;">Postać 3</div>
+            <div style="color:#9ca6c7;font-size:8px;margin-top:2px;">cel: węzeł 42</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Pod canvasem</h3>
+      <p>Poziomy pasek z kartami postaci tuż pod mapą. Pełna szerokość 900px, łatwo rozszerzyć o statystyki w przyszłości.</p>
+    </div>
+  </div>
+
+  <!-- Option B: right sidebar -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;flex-direction:column;gap:4px;padding:12px;background:#0a0e1a;border-radius:8px;font-size:10px;font-family:monospace;">
+        <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;padding:8px 10px;color:#9ca6c7;">
+          ▲ &nbsp;<span style="color:#d9e1ff">FANGS PROTOTYPE</span> &nbsp;·&nbsp; sliders...
+        </div>
+        <div style="display:flex;gap:4px;">
+          <div style="background:#0d1525;border:1px solid rgba(160,175,218,0.18);border-radius:8px;flex:1;height:160px;display:flex;align-items:center;justify-content:center;color:#3a4766;font-size:11px;">
+            canvas (mapa)
+          </div>
+          <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;width:88px;padding:7px;display:flex;flex-direction:column;gap:5px;">
+            <div style="color:#9ca6c7;font-size:8px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;">Gracze</div>
+            <div style="background:#0d1525;border-radius:5px;padding:6px;border:1px solid rgba(255,107,107,0.4);">
+              <div style="width:8px;height:8px;background:#ff6b6b;border-radius:50%;margin-bottom:3px;"></div>
+              <div style="color:#d9e1ff;font-size:8px;">Postać 1</div>
+              <div style="color:#9ca6c7;font-size:7px;margin-top:1px;">bezczynna</div>
+            </div>
+            <div style="background:#0d1525;border-radius:5px;padding:6px;border:1px solid rgba(107,255,184,0.4);">
+              <div style="width:8px;height:8px;background:#6bffb8;border-radius:50%;margin-bottom:3px;"></div>
+              <div style="color:#d9e1ff;font-size:8px;">Postać 2</div>
+              <div style="color:#9ca6c7;font-size:7px;margin-top:1px;">w ruchu</div>
+            </div>
+            <div style="background:#0d1525;border-radius:5px;padding:6px;border:1px solid rgba(255,208,107,0.4);">
+              <div style="width:8px;height:8px;background:#ffd06b;border-radius:50%;margin-bottom:3px;"></div>
+              <div style="color:#d9e1ff;font-size:8px;">Postać 3</div>
+              <div style="color:#9ca6c7;font-size:7px;margin-top:1px;">cel: 42</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Prawy sidebar</h3>
+      <p>Pionowy panel obok canvasu. Mapa trochę węższa, ale postaci są zawsze widoczne niezależnie od scrollowania.</p>
+    </div>
+  </div>
+
+  <!-- Option C: inside top panel -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="display:flex;flex-direction:column;gap:4px;padding:12px;background:#0a0e1a;border-radius:8px;font-size:10px;font-family:monospace;">
+        <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;padding:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+            <div style="flex:1">
+              <div style="color:#d9e1ff;font-size:9px;margin-bottom:4px;">▲ FANGS PROTOTYPE</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+                <div style="background:#0d1525;border-radius:4px;padding:4px 6px;border:1px solid rgba(160,175,218,0.1);color:#9ca6c7;font-size:8px;">Districts: 9</div>
+                <div style="background:#0d1525;border-radius:4px;padding:4px 6px;border:1px solid rgba(160,175,218,0.1);color:#9ca6c7;font-size:8px;">Density: 4</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:120px;">
+              <div style="color:#9ca6c7;font-size:8px;text-transform:uppercase;letter-spacing:0.06em;">Postacie gracza</div>
+              <div style="display:flex;gap:3px;">
+                <div style="flex:1;background:#0d1525;border-radius:4px;padding:5px;border:1px solid rgba(255,107,107,0.4);text-align:center;">
+                  <div style="width:7px;height:7px;background:#ff6b6b;border-radius:50%;margin:0 auto 2px;"></div>
+                  <div style="color:#d9e1ff;font-size:8px;">P1</div>
+                </div>
+                <div style="flex:1;background:#0d1525;border-radius:4px;padding:5px;border:1px solid rgba(107,255,184,0.4);text-align:center;">
+                  <div style="width:7px;height:7px;background:#6bffb8;border-radius:50%;margin:0 auto 2px;"></div>
+                  <div style="color:#d9e1ff;font-size:8px;">P2</div>
+                </div>
+                <div style="flex:1;background:#0d1525;border-radius:4px;padding:5px;border:1px solid rgba(255,208,107,0.4);text-align:center;">
+                  <div style="width:7px;height:7px;background:#ffd06b;border-radius:50%;margin:0 auto 2px;"></div>
+                  <div style="color:#d9e1ff;font-size:8px;">P3</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#0d1525;border:1px solid rgba(160,175,218,0.18);border-radius:8px;height:130px;display:flex;align-items:center;justify-content:center;color:#3a4766;font-size:11px;">
+          canvas (mapa)
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — W panelu górnym</h3>
+      <p>Sekcja „Postacie gracza" wbudowana w istniejący panel kontrolny. Mapa ma pełną szerokość, ale panel robi się gęstszy.</p>
+    </div>
+  </div>
+
+</div>

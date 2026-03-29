@@ -1,0 +1,104 @@
+<h2>Co pokazuje karta postaci gracza?</h2>
+<p class="subtitle">Panel pod mapą — jak dużo informacji na karcie?</p>
+
+<div class="cards">
+
+  <!-- Option A: minimal - just color + number -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0a0e1a;border-radius:8px;padding:10px;">
+        <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;padding:8px;display:flex;gap:6px;">
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:10px 8px;border:1px solid rgba(255,107,107,0.4);display:flex;align-items:center;gap:8px;">
+            <div style="width:12px;height:12px;background:#ff6b6b;border-radius:2px;flex-shrink:0;"></div>
+            <div style="color:#d9e1ff;font-size:11px;font-family:monospace;">P1</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:10px 8px;border:1px solid rgba(107,255,184,0.4);display:flex;align-items:center;gap:8px;">
+            <div style="width:12px;height:12px;background:#6bffb8;border-radius:2px;flex-shrink:0;"></div>
+            <div style="color:#d9e1ff;font-size:11px;font-family:monospace;">P2</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:10px 8px;border:1px solid rgba(255,208,107,0.4);display:flex;align-items:center;gap:8px;">
+            <div style="width:12px;height:12px;background:#ffd06b;border-radius:2px;flex-shrink:0;"></div>
+            <div style="color:#d9e1ff;font-size:11px;font-family:monospace;">P3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Minimalna</h3>
+      <p>Kwadrat koloru + numer. Zero szumu — miejsce na statystyki pojawi się później.</p>
+    </div>
+  </div>
+
+  <!-- Option B: color + name + status -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0a0e1a;border-radius:8px;padding:10px;">
+        <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;padding:8px;display:flex;gap:6px;">
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:9px;border:1px solid rgba(255,107,107,0.4);">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <div style="width:11px;height:11px;background:#ff6b6b;border-radius:2px;flex-shrink:0;"></div>
+              <div style="color:#d9e1ff;font-size:10px;font-family:monospace;">Postać 1</div>
+            </div>
+            <div style="color:#9ca6c7;font-size:9px;font-family:monospace;">bezczynna</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:9px;border:1px solid rgba(107,255,184,0.4);">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <div style="width:11px;height:11px;background:#6bffb8;border-radius:2px;flex-shrink:0;"></div>
+              <div style="color:#d9e1ff;font-size:10px;font-family:monospace;">Postać 2</div>
+            </div>
+            <div style="color:#6bffb8;font-size:9px;font-family:monospace;">w ruchu</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:9px;border:1px solid rgba(255,208,107,0.4);">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <div style="width:11px;height:11px;background:#ffd06b;border-radius:2px;flex-shrink:0;"></div>
+              <div style="color:#d9e1ff;font-size:10px;font-family:monospace;">Postać 3</div>
+            </div>
+            <div style="color:#ffd06b;font-size:9px;font-family:monospace;">cel: węzeł 42</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Kolor + status</h3>
+      <p>Kwadrat, etykieta i aktualny stan (bezczynna / w ruchu / cel: węzeł X). Przydatne bez klikania na mapę.</p>
+    </div>
+  </div>
+
+  <!-- Option C: color + name + status + selected highlight -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0a0e1a;border-radius:8px;padding:10px;">
+        <div style="background:#141b2f;border:1px solid rgba(160,175,218,0.2);border-radius:6px;padding:8px;display:flex;gap:6px;">
+          <!-- selected card -->
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:9px;border:1px solid rgba(255,107,107,0.8);box-shadow:0 0 8px rgba(255,107,107,0.25);">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <div style="width:11px;height:11px;background:#ff6b6b;border-radius:2px;flex-shrink:0;"></div>
+              <div style="color:#f2f5ff;font-size:10px;font-family:monospace;">Postać 1</div>
+            </div>
+            <div style="color:#9ca6c7;font-size:9px;font-family:monospace;">bezczynna</div>
+            <div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,107,107,0.2);color:#ff6b6b;font-size:8px;text-transform:uppercase;letter-spacing:0.06em;">zaznaczona</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:9px;border:1px solid rgba(107,255,184,0.3);">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <div style="width:11px;height:11px;background:#6bffb8;border-radius:2px;flex-shrink:0;"></div>
+              <div style="color:#d9e1ff;font-size:10px;font-family:monospace;">Postać 2</div>
+            </div>
+            <div style="color:#6bffb8;font-size:9px;font-family:monospace;">w ruchu</div>
+          </div>
+          <div style="flex:1;background:#0d1525;border-radius:5px;padding:9px;border:1px solid rgba(255,208,107,0.3);">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+              <div style="width:11px;height:11px;background:#ffd06b;border-radius:2px;flex-shrink:0;"></div>
+              <div style="color:#d9e1ff;font-size:10px;font-family:monospace;">Postać 3</div>
+            </div>
+            <div style="color:#ffd06b;font-size:9px;font-family:monospace;">cel: węzeł 42</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Z podświetleniem zaznaczenia</h3>
+      <p>Jak B, ale kliknięcie karty w panelu zaznacza postać (i vice-versa — zaznaczenie na mapie podświetla kartę). Synchronizacja selekcji.</p>
+    </div>
+  </div>
+
+</div>

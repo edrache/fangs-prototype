@@ -1,0 +1,12 @@
+{"type":"server-started","port":65134,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:65134","screen_dir":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content","state_dir":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/state"}
+{"type":"screen-added","file":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content/visual-style.html"}
+{"source":"user-event","type":"click","text":"A — Top-down, clean geometry\n      Flat rectangles, dark background, colored districts. Minimalist and readable.","choice":"topdown-clean","id":null,"timestamp":1774718542911}
+{"type":"screen-added","file":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content/districts.html"}
+{"source":"user-event","type":"click","text":"DISTRICT 1\n        DISTRICT 2\n        DISTRICT 3\n        DISTRICT 4\n        \n        \n        \n        \n        \n        \n        \n        \n        \n        \n        \n        \n        \n      \n    \n    \n      A — Kolorem tła i budynków\n      Każda dzielnica ma własny odcień koloru — tło i budynki są w tej samej palecie.","choice":"color-fill","id":null,"timestamp":1774718598244}
+{"type":"screen-added","file":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content/waiting.html"}
+{"type":"screen-added","file":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content/characters.html"}
+{"type":"screen-added","file":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content/waiting-2.html"}
+{"type":"screen-added","file":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content/action-menu.html"}
+{"type":"screen-added","file":"/Users/marek/OfflineDocuments/Repo/Antigravity/Fangs-prototype/.superpowers/brainstorm/24339-1774718484/content/target-mode.html"}
+{"source":"user-event","type":"click","text":"kliknij cel\n      \n    \n    \n      Zmiana kursora + hint\n      Kursor zmienia się na celownik, mały napis \"kliknij cel\" na canvas. Brak zmian w wyglądzie mapy.","choice":"cursor","id":null,"timestamp":1774721433056}
+{"type":"server-stopped","reason":"idle timeout"}

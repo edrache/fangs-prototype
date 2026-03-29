@@ -74,5 +74,17 @@ Original prompt: od czego zaczniej implementacje? zrób to
 
 TODO
 - Implement Hunt action: `simulation/hunt.js`, capabilities array on characters, `hunt_picking`/`npc_menu_open` interaction modes, ring timer renderer, success notification, player panel status. Plan: `docs/superpowers/plans/2026-03-29-hunt-action.md`.
+- Implement Blood stat: `blood`, `maxBlood`, `hungry` fields on player characters; `simulation/blood.js` with decay (~35%/day, halved in player district) and hunt gain (+45); blood bar + `⚠ HUNGER!` notice in player panel. Spec: `docs/superpowers/specs/2026-03-29-blood-stat-design.md`. Plan: `docs/superpowers/plans/2026-03-29-blood-stat.md`.
 - Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.
 - Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.
+
+2026-03-29
+- Implemented the first end-to-end Hunt action pass across `entities/character.js`, `simulation/hunt.js`, `main.js`, `ui/interaction.js`, `renderer/canvas.js`, `ui/playerPanel.js`, and `index.html`.
+- Characters now expose `capabilities`, `hunt`, and `frozen`; player characters receive `['hunt']`, and `render_game_to_text()` includes capabilities, hunt state, frozen flag, and notifications.
+- Added `simulation/hunt.js` with `startHunt`, `updateHunts`, and `cancelHunt`, plus `main.js` wiring for hunt updates and `hunt_success` notifications.
+- Reworked interaction flow so player menus are dynamic, hunting can be started either via direct NPC click from the player menu or via dedicated hunt-picking mode, and active hunts expose `Cancel hunt`.
+- Added hunt UI/readouts: player-panel hunt status row, dynamic menu rendering, and canvas support for a hunt ring plus success-notification visuals.
+- Verified syntax with `node --check` on all touched JS modules.
+- Verified browser smoke at `http://127.0.0.1:8086/index.html` with `node scripts/local_playwright_check.mjs http://127.0.0.1:8086/index.html output/hunt-action-smoke`; no console errors were produced.
+- Verified interaction start flow in Playwright via `node --input-type=module -e ...` using artifacts in `output/hunt-action-flow`: player menu -> NPC menu -> Hunt starts, and `state-after.json` shows player 0 with `hunt.phase === "moving"` plus the hunt status card visible in `hunt-started.png`.
+- Remaining issue: the long-run E2E completion path is still not fully resolved. Repeated Playwright runs in `output/hunt-action-complete` show the UI entering `moving`, but the hunter still does not transition into `hunting`/success after long simulated advances. The current debugging focus should stay in the interaction between `updateCharacter()` path acquisition and `simulation/hunt.js` movement ownership.

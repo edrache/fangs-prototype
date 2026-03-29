@@ -252,6 +252,9 @@ export function createCharacter(intersections, rng, colorIndex) {
     trail: [],
     destination: null,
     isPlayer: false,
+    capabilities: [],
+    hunt: null,
+    frozen: false,
     rng: createLocalRNG(rng.int(1, 0x7fffffff)),
   };
 
@@ -274,12 +277,21 @@ export function setCharacterDestination(char, destination) {
 }
 
 export function updateCharacter(char, dt, intersections, characters = []) {
+  if (char.frozen) {
+    return;
+  }
+
   if (acquirePathFromDestination(char, intersections, characters)) {
     pushTrail(char);
     return;
   }
 
   if (char.path.length === 0) {
+    if (char.hunt?.phase === 'moving') {
+      pushTrail(char);
+      return;
+    }
+
     const path = pickRandomReachableTarget(char, intersections, char.rng);
 
     if (path) {
@@ -293,6 +305,11 @@ export function updateCharacter(char, dt, intersections, characters = []) {
   stepAlongPath(char, dt, intersections, characters);
 
   if (char.path.length === 0 && char.destination == null) {
+    if (char.hunt?.phase === 'moving') {
+      pushTrail(char);
+      return;
+    }
+
     const path = pickRandomReachableTarget(char, intersections, char.rng);
 
     if (path) {

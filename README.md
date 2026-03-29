@@ -13,6 +13,7 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 - Player characters spawning inside the player-owned district
 - 5-minute real-time day/night cycle with a seeded 2026 calendar
 - Time bar showing named phases, full date, and a color-split day/night slider with phase dividers
+- Hunt action for player characters: pick an NPC, close in, freeze both characters, and resolve the hunt with a timed action ring
 
 ## Running
 
@@ -86,6 +87,7 @@ Below the canvas, the app also shows a dedicated player-character panel:
 |---|---|
 | `Character N` cards | One card per player-controlled character |
 | Status line | Shows `idle`, `moving`, `target: node N`, or `following: character N` |
+| Hunt line | Shows `HUNT: TRACKING TARGET`, `HUNT: IN PROGRESS X%`, or `HUNT SUCCESSFUL` when relevant |
 | Card click | Opens the same action menu as clicking that player character on the map |
 
 The top-left district is reserved as the player district. It is outlined in dark red as a topmost overlay so the border stays visible, and the initial player-controlled walkers spawn on street nodes inside that district after every regeneration.
@@ -189,10 +191,13 @@ speed: 70, // same speed for every character
 Current MVP interaction on the canvas:
 
 1. Click a player character to select it.
-2. Use the popup menu to choose `Choose destination`.
-3. Click a street once to preview a node destination, then click the same street target again to confirm it.
+2. Use the popup menu to choose `Choose destination` or `Hunt`.
+3. For `Choose destination`, click a street once to preview a node destination, then click the same street target again to confirm it.
 4. Or click another character once to preview follow / chase, then click that same character again to confirm it.
-5. Press `Esc` or click the selected player character again to clear the selection.
+5. For `Hunt`, click an NPC from the open player menu or enter hunt-picking and confirm the target NPC.
+6. Once the hunter reaches the target, both characters stop in the same place and a hunt timer ring starts counting down.
+7. The default hunt duration is `1` game hour, which equals `12.5` real seconds at `1×` speed because the game clock runs at `5` real minutes per full day.
+8. Press `Esc` or click the selected player character again to clear the selection.
 
 The interaction layer maps a street click to the nearest reachable street-graph node, keeps it as a preview target, and only commits the reroute on the second matching click. After a destination is confirmed, the selected player character returns to the popup-menu state so another action can be chosen immediately. NPCs remain visible and can still be used as follow targets, but they do not open the action menu.
 
@@ -208,10 +213,11 @@ The interaction layer maps a street click to the nearest reachable street-graph 
 8. `simulation/clock.js` derives the 24-hour clock, named phases, and seeded 2026 calendar from elapsed simulation time.
 9. `ui/timeControls.js` manages simulation speed buttons, keyboard shortcuts, and the active time-scale state.
 10. `ui/dayDisplay.js` renders the current phase, date, and the visual day/night timeline slider.
-11. `ui/interaction.js` handles canvas hit testing, player-character selection, and street-click rerouting.
-12. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection and movement state.
-13. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, the player-district border, and debug intersections.
-14. `main.js` regenerates the city, spawns player characters inside the player-owned district, wires the clock into the UI, and exposes debug state through `render_game_to_text()`.
+11. `simulation/hunt.js` owns hunt state, target locking, countdown progress, cancellation, and completion.
+12. `ui/interaction.js` handles canvas hit testing, player-character selection, dynamic action menus, hunt targeting, and street-click rerouting.
+13. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection, movement state, and hunt progress.
+14. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, hunt timers, success notifications, the player-district border, and debug intersections.
+15. `main.js` regenerates the city, spawns player characters inside the player-owned district, wires the clock and hunt simulation into the UI, and exposes debug state through `render_game_to_text()`.
 
 ## Architecture
 
@@ -221,7 +227,7 @@ pathfinding/   — BFS route finding on the street graph
 entities/      — Character spawning and movement updates
 renderer/      — Stateless Canvas renderer
 ui/            — Control panel, time controls, and canvas interaction flow
-simulation/    — Pure simulation helpers such as the day/night clock
+simulation/    — Pure simulation helpers such as the day/night clock and hunt action state
 scripts/       — Local development helpers (including Playwright screenshot checks)
 main.js        — Game loop and high-level parameters
 ```

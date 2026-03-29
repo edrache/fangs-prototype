@@ -4,6 +4,7 @@ import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
 import { createClock } from './simulation/clock.js';
+import { startHunt, updateHunts, cancelHunt } from './simulation/hunt.js';
 import { createDayDisplay } from './ui/dayDisplay.js';
 import { createInteractionController } from './ui/interaction.js';
 import { createPlayerPanel } from './ui/playerPanel.js';
@@ -41,7 +42,20 @@ const state = {
   timeMs: 0,
   lastTickMs: performance.now(),
   startDayOfYear: 1,
+  notifications: [],
 };
+
+function onHuntComplete(playerChar, npcChar) {
+  if (npcChar) {
+    state.characters = state.characters.filter((character) => character.id !== npcChar.id);
+  }
+
+  state.notifications.push({
+    type: 'hunt_success',
+    characterId: playerChar.id,
+    createdAt: performance.now(),
+  });
+}
 
 const interaction = createInteractionController({
   canvas,
@@ -49,6 +63,14 @@ const interaction = createInteractionController({
   getCharacters: () => state.characters,
   onAssignDestination(character, destination) {
     setCharacterDestination(character, destination);
+    render();
+  },
+  onStartHunt(playerChar, npcChar) {
+    startHunt(playerChar, npcChar);
+    render();
+  },
+  onCancelHunt(playerChar) {
+    cancelHunt(playerChar, state.characters);
     render();
   },
   onChange() {
@@ -114,6 +136,9 @@ function createCharacters(city, seed, count) {
   for (let index = 0; index < characterCount; index += 1) {
     const character = createCharacter(city.intersections, rng, index);
     character.isPlayer = index < PLAYER_COUNT;
+    if (character.isPlayer) {
+      character.capabilities = ['hunt'];
+    }
 
     if (character.isPlayer && playerNodes.length > 0) {
       const startNode = playerNodes[rng.int(0, playerNodes.length - 1)];
@@ -142,8 +167,8 @@ function updateCharacters(dtSeconds) {
 
 function render() {
   const interactionState = interaction.getState();
-  renderCity(ctx, state.city, state.characters, interactionState);
-  playerPanel.update(interactionState);
+  renderCity(ctx, state.city, state.characters, interactionState, state.notifications);
+  playerPanel.update(interactionState, state.notifications);
   dayDisplay.update(clock.getState(state.timeMs));
 }
 
@@ -158,6 +183,7 @@ function stepSimulation(deltaMs) {
   while (remaining > 0) {
     const currentStep = Math.min(stepMs, remaining);
     updateCharacters(currentStep / 1000);
+    updateHunts(state.characters, currentStep, onHuntComplete);
     remaining -= currentStep;
   }
 
@@ -172,6 +198,7 @@ function regenerate() {
   state.frame = 0;
   state.timeMs = 0;
   state.lastTickMs = performance.now();
+  state.notifications = [];
   interaction.reset();
   seedReadout.textContent =
     `seed ${params.seed} · districts ${state.city.districts.length} · streets ${state.city.meta.totalStreetCount} · buildings ${state.city.meta.buildingCount} · nodes ${state.city.intersections.length} · chars ${state.characters.length}`;
@@ -182,6 +209,9 @@ function regenerate() {
 function tick(now) {
   const elapsed = Math.max(0, Math.min(100, now - state.lastTickMs));
   state.lastTickMs = now;
+  state.notifications = state.notifications.filter(
+    (notification) => performance.now() - notification.createdAt < 2500,
+  );
   stepSimulation(elapsed * timeScale);
   window.requestAnimationFrame(tick);
 }
@@ -204,6 +234,10 @@ window.render_game_to_text = () => {
     timeMs: state.timeMs,
     frame: state.frame,
     startDayOfYear: state.startDayOfYear,
+    notifications: state.notifications.map((notification) => ({
+      type: notification.type,
+      characterId: notification.characterId,
+    })),
     clock: {
       hour: clockState.hour,
       minute: clockState.minute,
@@ -223,6 +257,7 @@ window.render_game_to_text = () => {
     characters: state.characters.map((character) => ({
       id: character.id,
       isPlayer: character.isPlayer,
+      capabilities: [...(character.capabilities ?? [])],
       color: character.color,
       pos: {
         x: Number(character.pos.x.toFixed(2)),
@@ -233,6 +268,15 @@ window.render_game_to_text = () => {
       progress: Number(character.progress.toFixed(3)),
       pathLength: character.path.length,
       destination: character.destination,
+      hunt: character.hunt
+        ? {
+            phase: character.hunt.phase,
+            targetId: character.hunt.targetId,
+            elapsed: character.hunt.elapsed,
+            duration: character.hunt.duration,
+          }
+        : null,
+      frozen: character.frozen,
       trail: character.trail.slice(0, 10).map((point) => ({
         x: Number(point.x.toFixed(2)),
         y: Number(point.y.toFixed(2)),

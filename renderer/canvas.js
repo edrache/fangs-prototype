@@ -1,5 +1,3 @@
-import { getMenuLayoutForCharacter, MENU_ITEMS } from '../ui/interaction.js';
-
 const BACKGROUND_COLOR = '#1a1a2e';
 const STREET_FILL = '#6d748f';
 const STREET_EDGE = 'rgba(223, 230, 255, 0.06)';
@@ -7,6 +5,8 @@ const INTERSECTION_FILL = 'rgba(250, 252, 255, 0.45)';
 const CHARACTER_TRAIL_STEPS = 10;
 const CHARACTER_RADIUS = 4.8;
 const SELECTION_RING_RADIUS = CHARACTER_RADIUS + 5;
+const HUNT_RING_RADIUS = 20;
+const NOTIFICATION_LIFETIME_MS = 2500;
 
 function darkenColor(hex, factor) {
   const normalized = hex.replace('#', '');
@@ -21,6 +21,10 @@ function hexToRgba(hex, alpha) {
   const green = parseInt(normalized.slice(2, 4), 16);
   const blue = parseInt(normalized.slice(4, 6), 16);
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
+function findCharacterById(characters, characterId) {
+  return characters.find((character) => character.id === characterId) ?? null;
 }
 
 function fillDistrict(ctx, district) {
@@ -141,6 +145,36 @@ function drawCharacters(ctx, characters) {
   }
 }
 
+function drawHuntRings(ctx, characters) {
+  for (const character of characters) {
+    if (character?.hunt?.phase !== 'hunting') {
+      continue;
+    }
+
+    const duration = Math.max(1, character.hunt.duration ?? 1);
+    const progress = Math.min(1, Math.max(0, (character.hunt.elapsed ?? 0) / duration));
+
+    ctx.save();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(180, 0, 0, 0.3)';
+    ctx.beginPath();
+    ctx.arc(character.pos.x, character.pos.y, HUNT_RING_RADIUS, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#ff2244';
+    ctx.beginPath();
+    ctx.arc(
+      character.pos.x,
+      character.pos.y,
+      HUNT_RING_RADIUS,
+      -Math.PI / 2,
+      -Math.PI / 2 + Math.PI * 2 * progress,
+    );
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
 function drawSelectedCharacter(ctx, character) {
   if (!character) {
     return;
@@ -221,13 +255,11 @@ function drawTargetCharacter(ctx, selectedCharacter, targetCharacter) {
   ctx.restore();
 }
 
-function drawActionMenu(ctx, city, selectedCharacter, hoveredMenuItemIndex) {
-  if (!selectedCharacter) {
-    return;
-  }
+function drawActionMenu(ctx, interactionState) {
+  const layout = interactionState?.menuLayout;
+  const menuItems = interactionState?.menuItems ?? [];
 
-  const layout = getMenuLayoutForCharacter(city.width, city.height, selectedCharacter);
-  if (!layout) {
+  if (!layout || menuItems.length === 0) {
     return;
   }
 
@@ -242,11 +274,15 @@ function drawActionMenu(ctx, city, selectedCharacter, hoveredMenuItemIndex) {
 
   ctx.fillStyle = 'rgba(240, 244, 255, 0.82)';
   ctx.font = '11px "IBM Plex Mono", monospace';
-  ctx.fillText('Action menu', layout.x + layout.padding, layout.y + 14);
+  ctx.fillText(
+    interactionState.mode === 'npc_menu_open' ? 'Target action' : 'Action menu',
+    layout.x + layout.padding,
+    layout.y + 14,
+  );
 
-  for (let index = 0; index < MENU_ITEMS.length; index += 1) {
+  for (let index = 0; index < menuItems.length; index += 1) {
     const itemY = layout.y + layout.padding + 8 + index * layout.itemHeight;
-    const isHovered = hoveredMenuItemIndex === index;
+    const isHovered = interactionState.hoveredMenuItemIndex === index;
 
     if (isHovered) {
       ctx.fillStyle = 'rgba(133, 151, 224, 0.2)';
@@ -263,26 +299,28 @@ function drawActionMenu(ctx, city, selectedCharacter, hoveredMenuItemIndex) {
 
     ctx.fillStyle = 'rgba(246, 248, 255, 0.95)';
     ctx.font = '12px "IBM Plex Mono", monospace';
-    ctx.fillText(MENU_ITEMS[index].label, layout.x + layout.padding, itemY + 14);
+    ctx.fillText(menuItems[index].label, layout.x + layout.padding, itemY + 14);
   }
 
   ctx.restore();
 }
 
 function drawInteractionHint(ctx, interactionState) {
-  const isSelecting = interactionState?.selectedCharacterId != null;
-  const isFollowing = interactionState?.targetCharacterId != null;
-  const isMenuOpen = interactionState?.mode === 'menu_open';
-  const isPicking = interactionState?.mode === 'picking_destination';
-  const message = isSelecting
-    ? isMenuOpen
-      ? 'Player selected: choose an action from the popup menu.'
-      : isPicking
-      ? isFollowing
-        ? 'Target previewed: click the same walker again to confirm follow.'
-        : 'Target previewed: click the same street spot again to confirm reroute.'
-      : 'Player selected.'
-    : 'Click a player character to open its action menu.';
+  const mode = interactionState?.mode ?? 'idle';
+  const messageByMode = {
+    idle: 'Click a player character to open its action menu.',
+    menu_open: 'Choose an action, or click an NPC to open the target menu.',
+    npc_menu_open: 'Target selected: confirm Hunt or cancel.',
+    picking_destination: interactionState?.targetCharacterId != null
+      ? 'Follow preview active: click the same walker again to confirm.'
+      : interactionState?.targetNodeId != null
+        ? 'Destination preview active: click the same street spot again to confirm.'
+        : 'Pick a street node or another walker as the destination target.',
+    hunt_picking: interactionState?.targetCharacterId != null
+      ? 'Hunt preview active: click the same NPC again to confirm.'
+      : 'Pick an NPC target to begin the hunt.',
+  };
+  const message = messageByMode[mode] ?? messageByMode.idle;
 
   ctx.save();
   ctx.fillStyle = 'rgba(12, 16, 28, 0.72)';
@@ -299,27 +337,53 @@ function drawInteractionOverlay(ctx, city, characters, interactionState) {
     return;
   }
 
-  const selectedCharacter = characters.find(
-    (character) => character.id === interactionState.selectedCharacterId,
-  );
-  const hoveredCharacter = characters.find(
-    (character) => character.id === interactionState.hoveredCharacterId,
-  );
-  const targetNode = city.intersections.find(
-    (node) => node.id === interactionState.targetNodeId,
-  );
-  const targetCharacter = characters.find(
-    (character) => character.id === interactionState.targetCharacterId,
-  );
+  const selectedCharacter = findCharacterById(characters, interactionState.selectedCharacterId);
+  const hoveredCharacter = findCharacterById(characters, interactionState.hoveredCharacterId);
+  const targetNode = city.intersections.find((node) => node.id === interactionState.targetNodeId);
+  const targetCharacter = findCharacterById(characters, interactionState.targetCharacterId);
 
   drawHoveredCharacter(ctx, hoveredCharacter);
   drawSelectedCharacter(ctx, selectedCharacter);
   drawTargetNode(ctx, targetNode);
   drawTargetCharacter(ctx, selectedCharacter, targetCharacter);
-  if (interactionState.mode === 'menu_open') {
-    drawActionMenu(ctx, city, selectedCharacter, interactionState.hoveredMenuItemIndex);
+
+  if (interactionState.mode === 'menu_open' || interactionState.mode === 'npc_menu_open') {
+    drawActionMenu(ctx, interactionState);
   }
+
   drawInteractionHint(ctx, interactionState);
+}
+
+function drawNotifications(ctx, characters, notifications = [], now = performance.now()) {
+  for (const notification of notifications) {
+    if (notification?.type !== 'hunt_success') {
+      continue;
+    }
+
+    const character = findCharacterById(characters, notification.characterId);
+    if (!character) {
+      continue;
+    }
+
+    const progress = Math.min(
+      1,
+      Math.max(0, (now - notification.createdAt) / NOTIFICATION_LIFETIME_MS),
+    );
+    const fade = 1 - progress;
+    const offsetY = progress * 8;
+
+    ctx.save();
+    ctx.strokeStyle = `rgba(255, 225, 170, ${0.9 * fade})`;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(character.pos.x, character.pos.y, HUNT_RING_RADIUS + 6 + progress * 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = `rgba(255, 245, 214, ${fade})`;
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    ctx.fillText('Hunt successful!', character.pos.x - 50, character.pos.y - 24 - offsetY);
+    ctx.restore();
+  }
 }
 
 function drawGridHint(ctx, city, characters) {
@@ -334,7 +398,13 @@ function drawGridHint(ctx, city, characters) {
   ctx.restore();
 }
 
-export function renderCity(ctx, city, characters = [], interactionState = null) {
+export function renderCity(
+  ctx,
+  city,
+  characters = [],
+  interactionState = null,
+  notifications = [],
+) {
   if (!city) {
     return;
   }
@@ -355,11 +425,13 @@ export function renderCity(ctx, city, characters = [], interactionState = null) 
   drawBuildings(ctx, city);
   drawIntersections(ctx, city.intersections);
   drawCharacters(ctx, characters);
+  drawHuntRings(ctx, characters);
   drawInteractionOverlay(ctx, city, characters, interactionState);
   for (const district of city.districts) {
     if (district.isPlayerOwned) {
       drawPlayerDistrictBorder(ctx, district);
     }
   }
+  drawNotifications(ctx, characters, notifications);
   drawGridHint(ctx, city, characters);
 }

@@ -1,6 +1,7 @@
-const DAY_REAL_MS = 5 * 60 * 1000;
-const GAME_DAY_MS = 24 * 60 * 60 * 1000;
-const RATIO = GAME_DAY_MS / DAY_REAL_MS;
+export const DAY_REAL_MS = 5 * 60 * 1000;
+export const GAME_DAY_MS = 24 * 60 * 60 * 1000;
+export const GAME_CLOCK_RATIO = GAME_DAY_MS / DAY_REAL_MS;
+export const GAME_HOUR_SIM_MS = DAY_REAL_MS / 24;
 
 const PHASES = [
   { label: 'Głęboka noc', startHour: 1, isDangerous: false },
@@ -74,7 +75,7 @@ function getCalendarDate(dayOfYear0) {
 export function createClock(startDayOfYear) {
   return {
     getState(timeMs) {
-      const totalGameMs = timeMs * RATIO;
+      const totalGameMs = timeMs * GAME_CLOCK_RATIO;
       const hour = Math.floor(totalGameMs / 3_600_000) % 24;
       const minute = Math.floor(totalGameMs / 60_000) % 60;
       const dayNumber = Math.floor(totalGameMs / GAME_DAY_MS) + 1;

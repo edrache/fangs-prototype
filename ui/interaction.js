@@ -4,8 +4,13 @@ const MENU_WIDTH = 176;
 const MENU_ITEM_HEIGHT = 28;
 const MENU_PADDING = 10;
 
-export const MENU_ITEMS = [
-  { id: 'choose_destination', label: 'Choose destination' },
+export const NPC_MENU_ITEMS = [
+  { id: 'hunt', label: 'Hunt' },
+  { id: 'cancel', label: 'Cancel' },
+];
+
+const HUNTING_MENU_ITEMS = [
+  { id: 'cancel_hunt', label: 'Cancel hunt' },
   { id: 'cancel', label: 'Cancel' },
 ];
 
@@ -32,20 +37,20 @@ function toCanvasPoint(canvas, event) {
 
 function isPointInsideStreet(point, street) {
   return (
-    point.x >= street.x1 &&
-    point.x <= street.x2 &&
-    point.y >= street.y1 &&
-    point.y <= street.y2
+    point.x >= street.x1
+    && point.x <= street.x2
+    && point.y >= street.y1
+    && point.y <= street.y2
   );
 }
 
 function isNodeOnStreet(node, street) {
   const epsilon = Math.max(1, street.width * 0.2);
   return (
-    node.x >= street.x1 - epsilon &&
-    node.x <= street.x2 + epsilon &&
-    node.y >= street.y1 - epsilon &&
-    node.y <= street.y2 + epsilon
+    node.x >= street.x1 - epsilon
+    && node.x <= street.x2 + epsilon
+    && node.y >= street.y1 - epsilon
+    && node.y <= street.y2 + epsilon
   );
 }
 
@@ -109,13 +114,38 @@ function findDestinationNode(city, point) {
   return bestNode;
 }
 
-export function getMenuLayoutForCharacter(canvasWidth, canvasHeight, character) {
+function getPlayerMenuItems(character) {
+  const items = [{ id: 'choose_destination', label: 'Choose destination' }];
+  if (character?.capabilities?.includes('hunt')) {
+    items.push({ id: 'hunt', label: 'Hunt' });
+  }
+  items.push({ id: 'cancel', label: 'Cancel' });
+  return items;
+}
+
+function getCurrentMenuItems(character, mode) {
+  if (mode === 'npc_menu_open') {
+    return NPC_MENU_ITEMS;
+  }
+
+  if (!character) {
+    return [];
+  }
+
+  if (character.hunt != null) {
+    return HUNTING_MENU_ITEMS;
+  }
+
+  return getPlayerMenuItems(character);
+}
+
+export function getMenuLayoutForCharacter(canvasWidth, canvasHeight, character, itemCount) {
   if (!character) {
     return null;
   }
 
   const width = MENU_WIDTH;
-  const height = MENU_ITEMS.length * MENU_ITEM_HEIGHT + MENU_PADDING * 2;
+  const height = itemCount * MENU_ITEM_HEIGHT + MENU_PADDING * 2;
   const preferredX = character.pos.x + 18;
   const preferredY = character.pos.y - height - 12;
 
@@ -126,6 +156,7 @@ export function getMenuLayoutForCharacter(canvasWidth, canvasHeight, character) 
     height,
     itemHeight: MENU_ITEM_HEIGHT,
     padding: MENU_PADDING,
+    itemCount,
   };
 }
 
@@ -135,10 +166,10 @@ function getMenuItemIndex(point, layout) {
   }
 
   const inside =
-    point.x >= layout.x &&
-    point.x <= layout.x + layout.width &&
-    point.y >= layout.y &&
-    point.y <= layout.y + layout.height;
+    point.x >= layout.x
+    && point.x <= layout.x + layout.width
+    && point.y >= layout.y
+    && point.y <= layout.y + layout.height;
 
   if (!inside) {
     return null;
@@ -150,7 +181,7 @@ function getMenuItemIndex(point, layout) {
   }
 
   const index = Math.floor(relativeY / layout.itemHeight);
-  return index >= 0 && index < MENU_ITEMS.length ? index : null;
+  return index >= 0 && index < layout.itemCount ? index : null;
 }
 
 export function createInteractionController({
@@ -158,6 +189,8 @@ export function createInteractionController({
   getCity,
   getCharacters,
   onAssignDestination,
+  onStartHunt,
+  onCancelHunt,
   onChange,
 }) {
   const state = {
@@ -168,6 +201,7 @@ export function createInteractionController({
     targetNodeId: null,
     targetCharacterId: null,
     mousePos: null,
+    npcTargetCharacterId: null,
   };
 
   function emitChange() {
@@ -184,12 +218,36 @@ export function createInteractionController({
     return getCharactersSafe().find((character) => character.id === state.selectedCharacterId) ?? null;
   }
 
-  function getMenuLayout() {
-    return getMenuLayoutForCharacter(canvas.width, canvas.height, getSelectedCharacter());
+  function getNpcTarget() {
+    return getCharactersSafe().find((character) => character.id === state.npcTargetCharacterId) ?? null;
+  }
+
+  function getMenuLayoutForCurrentMode() {
+    if (state.mode === 'npc_menu_open') {
+      const npc = getNpcTarget();
+      return getMenuLayoutForCharacter(
+        canvas.width,
+        canvas.height,
+        npc,
+        NPC_MENU_ITEMS.length,
+      );
+    }
+
+    const selectedCharacter = getSelectedCharacter();
+    const items = getCurrentMenuItems(selectedCharacter, state.mode);
+    return getMenuLayoutForCharacter(
+      canvas.width,
+      canvas.height,
+      selectedCharacter,
+      items.length,
+    );
   }
 
   function updateCursor() {
-    if (state.mode === 'menu_open' && state.hoveredMenuItemIndex != null) {
+    if (
+      (state.mode === 'menu_open' || state.mode === 'npc_menu_open')
+      && state.hoveredMenuItemIndex != null
+    ) {
       canvas.style.cursor = 'pointer';
       return;
     }
@@ -199,7 +257,7 @@ export function createInteractionController({
       return;
     }
 
-    if (state.mode === 'picking_destination') {
+    if (state.mode === 'picking_destination' || state.mode === 'hunt_picking') {
       canvas.style.cursor = 'crosshair';
       return;
     }
@@ -213,6 +271,7 @@ export function createInteractionController({
     state.hoveredMenuItemIndex = null;
     state.targetNodeId = null;
     state.targetCharacterId = null;
+    state.npcTargetCharacterId = null;
     emitChange();
     updateCursor();
   }
@@ -228,6 +287,22 @@ export function createInteractionController({
     state.hoveredMenuItemIndex = null;
     state.targetNodeId = null;
     state.targetCharacterId = null;
+    state.npcTargetCharacterId = null;
+    emitChange();
+    updateCursor();
+  }
+
+  function openNpcMenu(characterId) {
+    const character = getCharactersSafe().find((candidate) => candidate.id === characterId);
+    if (!character || isPlayerCharacter(character)) {
+      return;
+    }
+
+    state.mode = 'npc_menu_open';
+    state.npcTargetCharacterId = characterId;
+    state.hoveredMenuItemIndex = null;
+    state.targetNodeId = null;
+    state.targetCharacterId = characterId;
     emitChange();
     updateCursor();
   }
@@ -237,6 +312,17 @@ export function createInteractionController({
     state.hoveredMenuItemIndex = null;
     state.targetNodeId = null;
     state.targetCharacterId = null;
+    state.npcTargetCharacterId = null;
+    emitChange();
+    updateCursor();
+  }
+
+  function beginHuntPicking() {
+    state.mode = 'hunt_picking';
+    state.hoveredMenuItemIndex = null;
+    state.targetNodeId = null;
+    state.targetCharacterId = null;
+    state.npcTargetCharacterId = null;
     emitChange();
     updateCursor();
   }
@@ -259,15 +345,29 @@ export function createInteractionController({
     emitChange();
   }
 
+  function getHoverableCharacterId(hoveredCharacter) {
+    if (!hoveredCharacter) {
+      return null;
+    }
+
+    if (state.mode === 'picking_destination' || state.mode === 'hunt_picking') {
+      return hoveredCharacter.id;
+    }
+
+    return isPlayerCharacter(hoveredCharacter) ? hoveredCharacter.id : null;
+  }
+
   function handlePointerMove(event) {
     const point = toCanvasPoint(canvas, event);
     const characters = getCharactersSafe();
     const hoveredCharacter = findCharacterAtPoint(characters, point);
 
     state.mousePos = point;
-    state.hoveredCharacterId = isPlayerCharacter(hoveredCharacter) ? hoveredCharacter.id : null;
+    state.hoveredCharacterId = getHoverableCharacterId(hoveredCharacter);
     state.hoveredMenuItemIndex =
-      state.mode === 'menu_open' ? getMenuItemIndex(point, getMenuLayout()) : null;
+      state.mode === 'menu_open' || state.mode === 'npc_menu_open'
+        ? getMenuItemIndex(point, getMenuLayoutForCurrentMode())
+        : null;
     updateCursor();
     emitChange();
   }
@@ -281,15 +381,56 @@ export function createInteractionController({
   }
 
   function handleMenuClick(point) {
-    const menuItemIndex = getMenuItemIndex(point, getMenuLayout());
+    if (state.mode === 'npc_menu_open') {
+      const layout = getMenuLayoutForCurrentMode();
+      const menuItemIndex = getMenuItemIndex(point, layout);
+      if (menuItemIndex == null) {
+        return false;
+      }
 
+      const menuItem = NPC_MENU_ITEMS[menuItemIndex];
+      if (menuItem.id === 'hunt') {
+        const selectedCharacter = getSelectedCharacter();
+        const npc = getNpcTarget();
+        if (selectedCharacter && npc && typeof onStartHunt === 'function') {
+          onStartHunt(selectedCharacter, npc);
+        }
+      }
+
+      state.npcTargetCharacterId = null;
+      clearSelection();
+      return true;
+    }
+
+    const layout = getMenuLayoutForCurrentMode();
+    const menuItemIndex = getMenuItemIndex(point, layout);
     if (menuItemIndex == null) {
       return false;
     }
 
-    const menuItem = MENU_ITEMS[menuItemIndex];
+    const selectedCharacter = getSelectedCharacter();
+    const items = getCurrentMenuItems(selectedCharacter, state.mode);
+    const menuItem = items[menuItemIndex];
+
     if (menuItem.id === 'choose_destination') {
       beginPickingDestination();
+      return true;
+    }
+
+    if (menuItem.id === 'hunt') {
+      beginHuntPicking();
+      return true;
+    }
+
+    if (menuItem.id === 'cancel_hunt') {
+      if (selectedCharacter && typeof onCancelHunt === 'function') {
+        onCancelHunt(selectedCharacter);
+      }
+      state.mode = 'menu_open';
+      state.targetNodeId = null;
+      state.targetCharacterId = null;
+      emitChange();
+      updateCursor();
       return true;
     }
 
@@ -298,7 +439,9 @@ export function createInteractionController({
   }
 
   function confirmNodeTarget(selectedCharacter, nodeId) {
-    onAssignDestination(selectedCharacter, { type: 'node', nodeId });
+    if (typeof onAssignDestination === 'function') {
+      onAssignDestination(selectedCharacter, { type: 'node', nodeId });
+    }
     state.mode = 'menu_open';
     state.targetNodeId = nodeId;
     state.targetCharacterId = null;
@@ -306,11 +449,21 @@ export function createInteractionController({
   }
 
   function confirmCharacterTarget(selectedCharacter, characterId) {
-    onAssignDestination(selectedCharacter, { type: 'character', characterId });
+    if (typeof onAssignDestination === 'function') {
+      onAssignDestination(selectedCharacter, { type: 'character', characterId });
+    }
     state.mode = 'menu_open';
     state.targetNodeId = null;
     state.targetCharacterId = characterId;
     emitChange();
+  }
+
+  function confirmHuntTarget(selectedCharacter, characterId) {
+    const targetCharacter = getCharactersSafe().find((character) => character.id === characterId);
+    if (selectedCharacter && targetCharacter && typeof onStartHunt === 'function') {
+      onStartHunt(selectedCharacter, targetCharacter);
+    }
+    clearSelection();
   }
 
   function handlePickingClick(point, selectedCharacter, characters, city) {
@@ -345,6 +498,32 @@ export function createInteractionController({
     previewNodeTarget(targetNode.id);
   }
 
+  function handleHuntPickingClick(point, selectedCharacter, characters) {
+    const clickedCharacter = findCharacterAtPoint(characters, point);
+
+    if (!clickedCharacter) {
+      clearPendingTarget();
+      return;
+    }
+
+    if (clickedCharacter.id === state.selectedCharacterId) {
+      clearSelection();
+      return;
+    }
+
+    if (isPlayerCharacter(clickedCharacter)) {
+      openMenuForCharacter(clickedCharacter.id);
+      return;
+    }
+
+    if (state.targetCharacterId === clickedCharacter.id) {
+      confirmHuntTarget(selectedCharacter, clickedCharacter.id);
+      return;
+    }
+
+    previewCharacterTarget(clickedCharacter.id);
+  }
+
   function handleClick(event) {
     const city = getCity();
     const characters = getCharactersSafe();
@@ -368,8 +547,13 @@ export function createInteractionController({
       return;
     }
 
-    if (state.mode === 'menu_open') {
+    if (state.mode === 'menu_open' || state.mode === 'npc_menu_open') {
       if (handleMenuClick(point)) {
+        return;
+      }
+
+      if (state.mode === 'menu_open' && clickedCharacter && !isPlayerCharacter(clickedCharacter)) {
+        openNpcMenu(clickedCharacter.id);
         return;
       }
 
@@ -385,7 +569,14 @@ export function createInteractionController({
       return;
     }
 
-    handlePickingClick(point, selectedCharacter, characters, city);
+    if (state.mode === 'picking_destination') {
+      handlePickingClick(point, selectedCharacter, characters, city);
+      return;
+    }
+
+    if (state.mode === 'hunt_picking') {
+      handleHuntPickingClick(point, selectedCharacter, characters);
+    }
   }
 
   function handleKeyDown(event) {
@@ -402,11 +593,15 @@ export function createInteractionController({
     state.targetNodeId = null;
     state.targetCharacterId = null;
     state.mousePos = null;
+    state.npcTargetCharacterId = null;
     updateCursor();
     emitChange();
   }
 
   function getState() {
+    const selectedCharacter = getSelectedCharacter();
+    const menuItems = getCurrentMenuItems(selectedCharacter, state.mode);
+
     return {
       mode: state.mode,
       selectedCharacterId: state.selectedCharacterId,
@@ -414,7 +609,9 @@ export function createInteractionController({
       hoveredMenuItemIndex: state.hoveredMenuItemIndex,
       targetNodeId: state.targetNodeId,
       targetCharacterId: state.targetCharacterId,
-      menuLayout: getMenuLayout(),
+      npcTargetCharacterId: state.npcTargetCharacterId,
+      menuItems,
+      menuLayout: getMenuLayoutForCurrentMode(),
       mousePos: state.mousePos ? { ...state.mousePos } : null,
     };
   }

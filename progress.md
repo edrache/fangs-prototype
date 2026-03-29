@@ -1,3 +1,5 @@
+Original prompt: przejdz do implementacji planu docs/superpowers/plans/2026-03-29-special-buildings.md Uzyj kilku agentow
+
 TODO
 - Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.
 - Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.
@@ -107,3 +109,22 @@ TODO
 - Fixed the panel interaction flow so clicking a player card reliably opens the same context menu as clicking the character on the map, while panel-local trait actions stay stable under frequent rerenders.
 - Fixed Flying + Hunt interaction bugs in `simulation/hunt.js` and `entities/traits/flying.js`: hunts now clear stale flight movement on start, airborne pursuit tracks the live NPC position, and hunt contact can promote into the timed hunting ring based on positional overlap instead of street-graph state alone.
 - Re-verified the Traits + panel + hunt slice with `node --check` across touched modules plus Playwright/browser smoke checks, including adding/removing `Flying`, opening the player-card menu from the panel, and confirming that a Flying hunter reaches `hunt.phase === "hunting"` before `hunt_success`.
+- Implemented the non-uniform day/night clock slice across `simulation/clock.js`, `simulation/hunt.js`, `main.js`, and `ui/dayDisplay.js`.
+- `simulation/clock.js` now owns the full piecewise real->game mapping: night lasts `180000` real ms, day lasts `43750` real ms, one cycle is `223750` real ms, `getState()` exposes `sliderFraction`, `getGameRate()` switches between `200` and `1152` game ms per real ms, and `gameHourToSliderPercent()` drives the slider layout.
+- `simulation/hunt.js` no longer imports `GAME_HOUR_SIM_MS`; hunt duration is frozen to the prior real-time value via local `HUNT_DURATION_MS = 12500`.
+- `main.js` now feeds Blood simulation with `currentStep * clock.getGameRate(stepStartRealMs)` so daytime decay accelerates with the new clock.
+- `ui/dayDisplay.js` now renders the thumb from `sliderFraction`, computes the day boundary at about `80.45%`, and places phase dividers with `gameHourToSliderPercent()`, so the slider visually gives ~80% width to night and ~20% to day.
+- Verified syntax with `node --check main.js`, `node --check simulation/clock.js`, `node --check simulation/hunt.js`, and `node --check ui/dayDisplay.js`.
+- Re-verified in Chromium on 2026-03-29 at `http://127.0.0.1:8095/index.html` with `node scripts/local_playwright_check.mjs http://127.0.0.1:8095/index.html output/nonuniform-day-night-smoke`; `output/nonuniform-day-night-smoke/state-0.json` reports a clean runtime and no `errors-0.json` was produced.
+- Captured full UI artifacts in `output/nonuniform-day-night-ui`: `full-page.png` shows the updated time bar, `ui-state.json` records the slider moving from about `32.49%` at `Północ 00:02` to about `80.76%` at `Rano 06:13`, then back near `0.36%` at `Noc 20:02`.
+- Verified the clock math directly with Node: checkpoints at `108000` real ms and `151750` real ms land exactly on `06:00` and `20:00`, `gameHourToSliderPercent(6)` returns about `80.45`, and the cycle rolls to Day 2 at `223750` real ms.
+- Verified Blood pacing in browser automation via `output/nonuniform-day-night-ui/blood-check.json`: over the same `10000` real ms window, players dropped only from `99.99` to `99.12` at night (`00:00 -> 00:33`), but from roughly `72.8` to `62.7` during day (`09:14 -> 12:27`), confirming the faster daytime game clock is now reaching Blood decay.
+- Follow-up doc debt: `README.md` still describes the old uniform 5-minute clock and legacy exported constants, so it should be updated in a later cleanup pass.
+- Implemented the special-buildings slice across `generator/city.js`, `renderer/canvas.js`, `ui/buildingInteraction.js`, `ui/buildingInfoOverlay.js`, `ui/interaction.js`, `main.js`, and `index.html`.
+- City generation now marks the largest building in the player-owned district as `special: 'nest'` with the description `Schronienie wampirów. Tu śpią podczas dnia.` and `window.render_game_to_text()` exposes both `buildingInteraction` state and a `specialBuildings` array for debugging.
+- Rendering now draws special buildings with a double purple outline, supports per-menu `menuTitle`, and shows a building action menu on the canvas alongside the existing character interaction layer.
+- Added `ui/buildingInteraction.js` for special-building hit testing, `Info` menu handling, and `Escape`/reset behavior, plus mutual exclusion hooks so opening a building menu closes character selection and vice versa.
+- Added `#canvas-container` in `index.html` and `ui/buildingInfoOverlay.js` for the top-right HTML info card; the overlay stays open independently of the canvas menu and closes on `×`, `Escape`, or regenerate.
+- Verified syntax with `node --check main.js`, `node --check generator/city.js`, `node --check renderer/canvas.js`, `node --check ui/interaction.js`, `node --check ui/buildingInteraction.js`, and `node --check ui/buildingInfoOverlay.js`.
+- Re-verified in Chromium on 2026-03-29 at `http://127.0.0.1:8095/index.html` with `node scripts/local_playwright_check.mjs http://127.0.0.1:8095/index.html output/special-buildings-smoke`; the smoke run completed cleanly.
+- Captured end-to-end artifacts in `output/special-buildings-e2e`: `overlay.png` shows the Nest outline plus visible HTML card, `summary.json` confirms `Nest -> Info -> overlay -> Escape`, and `mutual-exclusion-summary.json` confirms `building_menu_open -> menu_open -> building_menu_open` when switching between the Nest and a player character.

@@ -4,10 +4,12 @@ import { generateCity } from './generator/city.js';
 import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
-import { createClock, GAME_CLOCK_RATIO } from './simulation/clock.js';
+import { createClock } from './simulation/clock.js';
 import { updateBlood, applyHuntBloodGain } from './simulation/blood.js';
 import { startHunt, updateHunts, cancelHunt } from './simulation/hunt.js';
 import { createDayDisplay } from './ui/dayDisplay.js';
+import { createBuildingInfoOverlay } from './ui/buildingInfoOverlay.js';
+import { createBuildingInteractionController } from './ui/buildingInteraction.js';
 import { createInteractionController } from './ui/interaction.js';
 import { createPlayerPanel } from './ui/playerPanel.js';
 import { createTimeControls } from './ui/timeControls.js';
@@ -16,6 +18,7 @@ const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 700;
 const PLAYER_COUNT = 3;
 
+const canvasContainer = document.getElementById('canvas-container');
 const canvas = document.getElementById('city-canvas');
 const ctx = canvas.getContext('2d');
 const seedReadout = document.getElementById('seed-readout');
@@ -61,6 +64,20 @@ function onHuntComplete(playerChar, npcChar) {
   });
 }
 
+const buildingInteraction = createBuildingInteractionController({
+  canvas,
+  getCity: () => state.city,
+  onMenuOpen() {
+    interaction.clearSelection();
+  },
+  onInfoRequested(building) {
+    buildingInfoOverlay.show(building);
+  },
+  onChange() {
+    render();
+  },
+});
+
 const interaction = createInteractionController({
   canvas,
   getCity: () => state.city,
@@ -76,6 +93,9 @@ const interaction = createInteractionController({
   onCancelHunt(playerChar) {
     cancelHunt(playerChar, state.characters);
     render();
+  },
+  onMenuOpen() {
+    buildingInteraction.clearSelection();
   },
   onChange() {
     render();
@@ -146,6 +166,8 @@ createTimeControls({
   },
 });
 
+const buildingInfoOverlay = createBuildingInfoOverlay({ mount: canvasContainer });
+
 panelToggle.addEventListener('click', () => {
   const isCollapsed = controlsEl.classList.toggle('collapsed');
   panelToggle.textContent = isCollapsed ? '▼' : '▲';
@@ -212,9 +234,18 @@ function updateCharacters(dtSeconds) {
 
 function render() {
   const interactionState = interaction.getState();
-  renderCity(ctx, state.city, state.characters, interactionState, state.notifications);
+  const buildingState = buildingInteraction.getState();
+  renderCity(
+    ctx,
+    state.city,
+    state.characters,
+    interactionState,
+    buildingState,
+    state.notifications,
+  );
   playerPanel.update(interactionState, state.notifications);
   dayDisplay.update(clock.getState(state.timeMs));
+  buildingInfoOverlay.update(buildingState);
 }
 
 function stepSimulation(deltaMs) {
@@ -229,9 +260,10 @@ function stepSimulation(deltaMs) {
     const currentStep = Math.min(stepMs, remaining);
     updateCharacters(currentStep / 1000);
     updateHunts(state.characters, currentStep, onHuntComplete);
+    const stepStartRealMs = state.timeMs - remaining;
     updateBlood(
       state.characters,
-      currentStep * GAME_CLOCK_RATIO,
+      currentStep * clock.getGameRate(stepStartRealMs),
       state.city?.districts.filter((district) => district.isPlayerOwned),
     );
     remaining -= currentStep;
@@ -250,6 +282,8 @@ function regenerate() {
   state.lastTickMs = performance.now();
   state.notifications = [];
   interaction.reset();
+  buildingInteraction.reset();
+  buildingInfoOverlay.hide();
   seedReadout.textContent =
     `seed ${params.seed} · districts ${state.city.districts.length} · streets ${state.city.meta.totalStreetCount} · buildings ${state.city.meta.buildingCount} · nodes ${state.city.intersections.length} · chars ${state.characters.length}`;
   controls.setAppliedValues(params);
@@ -296,12 +330,21 @@ window.render_game_to_text = () => {
       date: clockState.date,
     },
     interaction: interaction.getState(),
+    buildingInteraction: buildingInteraction.getState(),
     districts: (state.city?.districts ?? []).map((district) => ({
       id: district.id,
       color: district.color,
       isPlayerOwned: district.isPlayerOwned,
       bounds: district.bounds,
     })),
+    specialBuildings: (state.city?.buildings ?? [])
+      .filter((building) => building.special)
+      .map((building) => ({
+        districtId: building.districtId,
+        special: building.special,
+        description: building.description,
+        rects: building.rects,
+      })),
     buildingsSample: (state.city?.buildings ?? []).slice(0, 6),
     intersectionsSample: (state.city?.intersections ?? []).slice(0, 12),
     characters: state.characters.map((character) => ({

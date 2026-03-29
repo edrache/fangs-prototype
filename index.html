@@ -340,6 +340,12 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
     }
 
+    #canvas-container {
+      position: relative;
+      width: 900px;
+      max-width: 100%;
+    }
+
     #player-panel {
       width: 900px;
       max-width: 100%;
@@ -689,7 +695,9 @@
     </div>
   </div>
 
-  <canvas id="city-canvas" width="900" height="700"></canvas>
+  <div id="canvas-container">
+    <canvas id="city-canvas" width="900" height="700"></canvas>
+  </div>
   <div id="player-panel" aria-label="Player characters"></div>
 
   <script type="module" src="./main.js"></script>

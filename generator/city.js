@@ -4,6 +4,31 @@ import { buildIntersectionGraph } from './graph.js';
 import { createRNG } from './rng.js';
 import { generateSecondaryStreets } from './streets.js';
 
+function getBuildingArea(building) {
+  return building.rects.reduce((sum, rect) => sum + rect.w * rect.h, 0);
+}
+
+function assignNestBuilding(buildings, districts) {
+  const playerDistrict = districts.find((district) => district.isPlayerOwned);
+  if (!playerDistrict) {
+    return;
+  }
+
+  const playerBuildings = buildings.filter(
+    (building) => building.districtId === playerDistrict.id,
+  );
+  if (playerBuildings.length === 0) {
+    return;
+  }
+
+  const nest = playerBuildings.reduce((best, building) =>
+    getBuildingArea(building) > getBuildingArea(best) ? building : best,
+  );
+
+  nest.special = 'nest';
+  nest.description = 'Schronienie wampirów. Tu śpią podczas dnia.';
+}
+
 function toRenderStreet(street) {
   if (street.type === 'h') {
     return {
@@ -52,6 +77,7 @@ export function generateCity(params) {
     majorStreetWidth: districtData.meta.majorStreetWidth,
     rng,
   });
+  assignNestBuilding(buildings, districtData.districts);
 
   return {
     width: params.width,

@@ -11,7 +11,8 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 - Player and NPC characters navigating the street graph with BFS
 - Seed-based deterministic city generation and initial character placement
 - Player characters spawning inside the player-owned district
-- 5-minute real-time day/night cycle with a seeded 2026 calendar
+- Special buildings, starting with a `Nest` in the player-owned district, highlighted directly on the map and exposing an info popup
+- Non-uniform real-time day/night cycle with a seeded 2026 calendar: night lasts 3 minutes, day lasts 43.75 seconds, and a full in-game day lasts 3 minutes 43.75 seconds
 - Time bar showing named phases, full date, and a color-split day/night slider with phase dividers
 - Hunt action for player characters: pick an NPC, close in, freeze both characters, and resolve the hunt with a timed action ring
 - Blood stat for player characters: passive decay over game time, slower drain inside the player district, refill on successful hunt, and a persistent hunger warning below 20%
@@ -45,7 +46,7 @@ This project uses both **real time** and **game time**, and they are not interch
 
 - Use **game time** for simulation mechanics: blood decay, hunt duration, cooldowns, day/night progression, and any balancing logic.
 - Use **real time** only for browser/frame plumbing such as `requestAnimationFrame`, `performance.now()`, and raw frame deltas entering the main loop.
-- The game clock currently maps **5 real minutes** to **24 in-game hours**.
+- The game clock currently maps **3 minutes of real night** plus **43.75 seconds of real day** to **24 in-game hours**.
 - If you are modifying a time-based system and it is not obvious which clock should drive it, the intended default is almost always **game time**.
 
 ## Controls
@@ -114,6 +115,23 @@ Below the canvas, the app also shows a dedicated player-character panel:
 | `- Traits` | Toggles trait-removal mode; while active, clicking a trait pill removes it from that character |
 
 The top-left district is reserved as the player district. It is outlined in dark red as a topmost overlay so the border stays visible, and the initial player-controlled walkers spawn on street nodes inside that district after every regeneration.
+
+That same district now also contains the current special building:
+
+| Building | Description |
+|---|---|
+| `Nest` | Largest building in the player-owned district. Rendered with a bright violet marker/outline, opens a small in-canvas action menu on click, and exposes an HTML info card with lore text. |
+
+### Map interactions
+
+| Interaction | Result |
+|---|---|
+| Click a player character | Opens that character's action menu |
+| Click the `Nest` special building | Opens a building action menu titled `Nest` |
+| Click `Info` in the Nest menu | Opens the floating top-right HTML info card |
+| `Escape` | Closes open character/building menus and the building info card |
+| Open a character menu while a building menu is open | Building menu closes automatically |
+| Open the Nest menu while a character menu is open | Character menu closes automatically |
 
 ### Main runtime parameters (`main.js`)
 
@@ -211,6 +229,7 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 | `SELECTION_RING_RADIUS` | Radius of the selected-character ring |
 | `HUNT_RING_RADIUS` | Radius of the hunt progress ring |
 | `NOTIFICATION_LIFETIME_MS` | Lifetime of hunt-success notifications in real milliseconds |
+| Special-building marker styles in `drawSpecialBuildings(...)` | Controls the glow, outline, and diamond marker used to highlight special buildings such as the Nest |
 
 ### Characters (`entities/character.js`)
 
@@ -258,6 +277,16 @@ Trait registry:
 | `HUNT_BLOOD_GAIN` | Flat Blood refill applied on successful hunt |
 | `updateBlood(characters, dt, playerDistricts)` | Applies Blood decay using **game-time milliseconds** |
 | `applyHuntBloodGain(character)` | Refills Blood and re-evaluates hunger state |
+
+### Clock (`simulation/clock.js`)
+
+| Variable | Description |
+|---|---|
+| `NIGHT_REAL_MS` | Real-time duration of the full night segment |
+| `DAY_PHASE_REAL_MS` | Real-time duration of the full day segment |
+| `CYCLE_REAL_MS` | Total real-time duration of one in-game day |
+| `gameHourToSliderPercent(hour)` | Maps an in-game hour to the shifted timeline slider position |
+| `clock.getGameRate(realMs)` | Returns the current real-time to game-time multiplier for the active phase |
 
 Current defaults:
 

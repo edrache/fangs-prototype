@@ -70,6 +70,56 @@ function drawBuildings(ctx, city) {
   }
 }
 
+function drawSpecialBuildings(ctx, city) {
+  for (const building of city.buildings) {
+    if (!building.special) {
+      continue;
+    }
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(185, 122, 255, 0.7)';
+    ctx.shadowBlur = 12;
+
+    for (const rect of building.rects) {
+      minX = Math.min(minX, rect.x);
+      minY = Math.min(minY, rect.y);
+      maxX = Math.max(maxX, rect.x + rect.w);
+      maxY = Math.max(maxY, rect.y + rect.h);
+
+      ctx.fillStyle = 'rgba(168, 117, 255, 0.14)';
+      ctx.fillRect(rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4);
+
+      ctx.strokeStyle = 'rgba(155, 127, 255, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(rect.x - 4, rect.y - 4, rect.w + 8, rect.h + 8);
+
+      ctx.strokeStyle = '#d8b0ff';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(rect.x - 1.5, rect.y - 1.5, rect.w + 3, rect.h + 3);
+    }
+
+    const centerX = (minX + maxX) / 2;
+    const markerY = minY - 10;
+    ctx.fillStyle = '#f2dcff';
+    ctx.strokeStyle = '#9b7fff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(centerX, markerY - 6);
+    ctx.lineTo(centerX + 6, markerY);
+    ctx.lineTo(centerX, markerY + 6);
+    ctx.lineTo(centerX - 6, markerY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
 function drawIntersections(ctx, intersections) {
   ctx.fillStyle = INTERSECTION_FILL;
 
@@ -275,7 +325,7 @@ function drawActionMenu(ctx, interactionState) {
   ctx.fillStyle = 'rgba(240, 244, 255, 0.82)';
   ctx.font = '11px "IBM Plex Mono", monospace';
   ctx.fillText(
-    interactionState.mode === 'npc_menu_open' ? 'Target action' : 'Action menu',
+    interactionState.menuTitle ?? (interactionState.mode === 'npc_menu_open' ? 'Target action' : 'Action menu'),
     layout.x + layout.padding,
     layout.y + 14,
   );
@@ -403,6 +453,7 @@ export function renderCity(
   city,
   characters = [],
   interactionState = null,
+  buildingInteractionState = null,
   notifications = [],
 ) {
   if (!city) {
@@ -423,10 +474,14 @@ export function renderCity(
   }
 
   drawBuildings(ctx, city);
+  drawSpecialBuildings(ctx, city);
   drawIntersections(ctx, city.intersections);
   drawCharacters(ctx, characters);
   drawHuntRings(ctx, characters);
   drawInteractionOverlay(ctx, city, characters, interactionState);
+  if (buildingInteractionState?.mode === 'building_menu_open') {
+    drawActionMenu(ctx, buildingInteractionState);
+  }
   for (const district of city.districts) {
     if (district.isPlayerOwned) {
       drawPlayerDistrictBorder(ctx, district);

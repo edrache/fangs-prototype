@@ -191,6 +191,7 @@ export function createInteractionController({
   onAssignDestination,
   onStartHunt,
   onCancelHunt,
+  onMenuOpen,
   onChange,
 }) {
   const state = {
@@ -291,6 +292,9 @@ export function createInteractionController({
     state.npcTargetCharacterId = null;
     state.mousePos = null;
     emitChange();
+    if (typeof onMenuOpen === 'function') {
+      onMenuOpen();
+    }
     updateCursor();
     return true;
   }

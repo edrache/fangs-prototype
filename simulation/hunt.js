@@ -1,7 +1,6 @@
 import { setCharacterDestination } from '../entities/character.js';
-import { GAME_HOUR_SIM_MS } from './clock.js';
 
-const HUNT_DURATION_MS = GAME_HOUR_SIM_MS;
+const HUNT_DURATION_MS = 12_500;
 const HUNT_CONTACT_DISTANCE = 20;
 
 function clearCharacterMovement(character) {

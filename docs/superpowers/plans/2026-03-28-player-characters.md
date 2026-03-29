@@ -320,11 +320,11 @@
 - [ ] **Step 1: Write `ui/playerPanel.js`**
 
   ```js
-  const LABEL_PREFIX = 'Postać';
+  const LABEL_PREFIX = 'Character';
 
   function getStatus(char) {
     if (char.destination?.type === 'character') {
-      return `śledzi: postać ${char.destination.characterId + 1}`;
+      return `following: character ${char.destination.characterId + 1}`;
     }
     if (char.path.length > 0) {
       return 'w ruchu';

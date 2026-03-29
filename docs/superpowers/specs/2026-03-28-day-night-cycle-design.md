@@ -35,16 +35,16 @@ createClock(startDayOfYear)
   hour,          // 0–23
   minute,        // 0–59
   phase: {
-    label,       // e.g. 'Przed świtem'
-    isDangerous, // true for 'Przed świtem' and 'Świt'
+    label,       // e.g. 'Before dawn'
+    isDangerous, // true for 'Before dawn' and 'Dawn'
   },
   dayNumber,     // 1-based, increments each midnight
   date: {
     day,          // 1–31
     month,        // 1–12
-    monthName,    // e.g. 'lutego'
+    monthName,    // e.g. 'February'
     dayOfWeek,    // 0=Mon … 6=Sun
-    dayOfWeekName // e.g. 'Wtorek'
+    dayOfWeekName // e.g. 'Tuesday'
   }
 }
 ```
@@ -55,15 +55,15 @@ No side effects. Same `timeMs` always returns the same result.
 
 | Phase label | Start hour | `isDangerous` |
 |-------------|-----------|---------------|
-| Rano | 6 | false |
-| Południe | 11 | false |
-| Popołudnie | 14 | false |
-| Zmierzch | 18 | false |
-| Noc | 20 | false |
-| Północ | 23 | false |
-| Głęboka noc | 1 | false |
-| Przed świtem | 3 | **true** |
-| Świt | 5 | **true** |
+| Morning | 6 | false |
+| Noon | 11 | false |
+| Afternoon | 14 | false |
+| Dusk | 18 | false |
+| Night | 20 | false |
+| Midnight | 23 | false |
+| Deep night | 1 | false |
+| Before dawn | 3 | **true** |
+| Dawn | 5 | **true** |
 
 Phase is determined by finding the last entry whose `startHour <= currentHour`, with midnight wrap-around.
 
@@ -87,12 +87,12 @@ Inserts a single `<div class="day-display">` into the provided `mount` element. 
 ### Rendered output (two lines)
 
 ```
-PRZED ŚWITEM  ⚠  03:47
-16 lutego · Wtorek · Dzień 47
+BEFORE DAWN  ⚠  03:47
+16 February · Tuesday · Day 47
 ```
 
-- Line 1: phase label (uppercase) + danger icon (`⚠` for `isDangerous`, `☠` specifically for Świt) + `HH:MM`.
-- Line 2: `D monthName · DayOfWeek · Dzień N`.
+- Line 1: phase label (uppercase) + danger icon (`⚠` for `isDangerous`, `☠` specifically for Dawn) + `HH:MM`.
+- Line 2: `D monthName · DayOfWeek · Day N`.
 - Dangerous phases use a warm amber/red colour (`#ffb347` or similar); all others use the standard muted `#9ca6c7` / `#f2f5ff` palette.
 
 ### CSS additions (`index.html`)

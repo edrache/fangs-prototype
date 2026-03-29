@@ -19,7 +19,7 @@ Special buildings extend the existing building object with two new fields:
   districtId: 0,
   rects: [...],          // unchanged
   special: 'nest',       // string type identifier; absent/null = regular building
-  description: 'Schronienie wampirów. Tu śpią podczas dnia.',
+  description: 'Vampire refuge. They sleep here during the day.',
 }
 ```
 

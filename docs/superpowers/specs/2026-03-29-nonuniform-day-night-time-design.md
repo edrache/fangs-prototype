@@ -116,7 +116,7 @@ Hardcoded as a constant in `dayDisplay.js` (imported or computed once at module 
 
 ### Day/night label positions
 
-The `Noc` / `Dzień` label layout is driven by `--day-start-percent`, so it updates automatically.
+The `Night` / `Day` label layout is driven by `--day-start-percent`, so it updates automatically.
 
 ## main.js
 

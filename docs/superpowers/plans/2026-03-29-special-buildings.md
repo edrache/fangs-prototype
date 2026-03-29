@@ -40,7 +40,7 @@ function assignNestBuilding(buildings, districts) {
   );
 
   nest.special = 'nest';
-  nest.description = 'Schronienie wampirów. Tu śpią podczas dnia.';
+  nest.description = 'Vampire refuge. They sleep here during the day.';
 }
 ```
 
@@ -642,7 +642,7 @@ After `emitChange();` and before `updateCursor();`, add:
 Open `index.html`. Click the outlined Nest building in the player's district:
 - A menu titled "Nest" appears near the building with "Info" option
 - Opening character menu while building menu is open: building menu should close (and vice versa)
-- Console should log `"Info requested: nest Schronienie wampirów..."` when Info is clicked
+- Console should log `"Info requested: nest Vampire refuge..."` when Info is clicked
 - Escape key closes building menu
 
 - [ ] **Step 7: Commit**

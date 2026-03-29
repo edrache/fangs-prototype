@@ -54,7 +54,7 @@ Exported singleton: `FlyingTrait`.
 3. When remaining distance < 1 px: set `char.flyTarget = null` (new target picked next tick).
 4. Return `true` to suppress default street movement.
 
-Pola `path`, `from`, `to`, `progress` pozostają na obiekcie postaci ale są nieużywane przez latające postacie.
+Pola `path`, `from`, `to`, `progress` remain on the character object but are unused by flying characters.
 
 ---
 

@@ -150,7 +150,7 @@ Each player card shows a status row when `hunt != null`:
 |-------|---------|
 | `'moving'` | `🏹 Zmierza do celu...` |
 | `'hunting'` | `🏹 Polowanie... 47%` (percent from `elapsed / duration`) |
-| Success (from notification, ~3s) | `✓ Polowanie zakończone sukcesem` |
+| Success (from notification, ~3s) | `✓ Hunt successful` |
 
 The status row replaces/supplements the existing destination info row in the card.
 

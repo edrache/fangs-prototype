@@ -46,10 +46,10 @@ export function createDayDisplay({ mount }) {
   timelineLabelsEl.className = 'day-display__labels';
 
   const nightLabelEl = document.createElement('span');
-  nightLabelEl.textContent = 'Noc';
+  nightLabelEl.textContent = 'Night';
 
   const dayLabelEl = document.createElement('span');
-  dayLabelEl.textContent = 'Dzień';
+  dayLabelEl.textContent = 'Day';
 
   timelineLabelsEl.append(nightLabelEl, dayLabelEl);
   timelineEl.append(timelineTrackEl, timelineLabelsEl);
@@ -62,13 +62,13 @@ export function createDayDisplay({ mount }) {
 
   return {
     update({ hour, minute, phase, dayNumber, date, sliderFraction }) {
-      const icon = phase.label === 'Świt' ? ' ☠' : phase.isDangerous ? ' ⚠' : '';
+      const icon = phase.label === 'Dawn' ? ' ☠' : phase.isDangerous ? ' ⚠' : '';
 
       phaseEl.textContent = `${phase.label}${icon}  ${pad(hour)}:${pad(minute)}`;
       phaseEl.className = `day-display__phase${phase.isDangerous ? ' day-display__phase--dangerous' : ''}`;
       timelineEl.style.setProperty('--time-percent', `${sliderFraction * 100}%`);
       timelineThumbEl.className = `day-display__thumb${phase.isDangerous ? ' day-display__thumb--dangerous' : ''}`;
-      dateEl.textContent = `${date.day} ${date.monthName} · ${date.dayOfWeekName} · Dzień ${dayNumber}`;
+      dateEl.textContent = `${date.day} ${date.monthName} · ${date.dayOfWeekName} · Day ${dayNumber}`;
     },
   };
 }

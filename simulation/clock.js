@@ -25,40 +25,40 @@ function realToCycleGameMs(posInCycle) {
 }
 
 const PHASES = [
-  { label: 'Głęboka noc', startHour: 1, isDangerous: false },
-  { label: 'Przed świtem', startHour: 3, isDangerous: true },
-  { label: 'Świt', startHour: 5, isDangerous: true },
-  { label: 'Rano', startHour: 6, isDangerous: false },
-  { label: 'Południe', startHour: 11, isDangerous: false },
-  { label: 'Popołudnie', startHour: 14, isDangerous: false },
-  { label: 'Zmierzch', startHour: 18, isDangerous: false },
-  { label: 'Noc', startHour: 20, isDangerous: false },
-  { label: 'Północ', startHour: 23, isDangerous: false },
+  { label: 'Deep night', startHour: 1, isDangerous: false },
+  { label: 'Before dawn', startHour: 3, isDangerous: true },
+  { label: 'Dawn', startHour: 5, isDangerous: true },
+  { label: 'Morning', startHour: 6, isDangerous: false },
+  { label: 'Noon', startHour: 11, isDangerous: false },
+  { label: 'Afternoon', startHour: 14, isDangerous: false },
+  { label: 'Dusk', startHour: 18, isDangerous: false },
+  { label: 'Night', startHour: 20, isDangerous: false },
+  { label: 'Midnight', startHour: 23, isDangerous: false },
 ];
 
 const MONTHS = [
-  { name: 'stycznia', days: 31 },
-  { name: 'lutego', days: 28 },
-  { name: 'marca', days: 31 },
-  { name: 'kwietnia', days: 30 },
-  { name: 'maja', days: 31 },
-  { name: 'czerwca', days: 30 },
-  { name: 'lipca', days: 31 },
-  { name: 'sierpnia', days: 31 },
-  { name: 'września', days: 30 },
-  { name: 'października', days: 31 },
-  { name: 'listopada', days: 30 },
-  { name: 'grudnia', days: 31 },
+  { name: 'January', days: 31 },
+  { name: 'February', days: 28 },
+  { name: 'March', days: 31 },
+  { name: 'April', days: 30 },
+  { name: 'May', days: 31 },
+  { name: 'June', days: 30 },
+  { name: 'July', days: 31 },
+  { name: 'August', days: 31 },
+  { name: 'September', days: 30 },
+  { name: 'October', days: 31 },
+  { name: 'November', days: 30 },
+  { name: 'December', days: 31 },
 ];
 
 const DAYS_OF_WEEK = [
-  'Poniedziałek',
-  'Wtorek',
-  'Środa',
-  'Czwartek',
-  'Piątek',
-  'Sobota',
-  'Niedziela',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
 ];
 
 const JAN1_2026_DOW = 3;

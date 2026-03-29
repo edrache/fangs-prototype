@@ -99,12 +99,12 @@ Called on every `render()` call (every animation frame) so that status lines —
 
 Each card shows:
 - Color square (matching character color)
-- Label: `Postać N` (where N = character index + 1)
+- Label: `Character N` (where N = character index + 1)
 - Status line (derived from character state):
   - `bezczynna` — `path.length === 0 && destination === null`
   - `w ruchu` — `path.length > 0 && destination === null`
-  - `cel: węzeł N` — `destination.type === 'node'`
-  - `śledzi: postać N` — `destination.type === 'character'`
+  - `target: node N` — `destination.type === 'node'`
+  - `following: character N` — `destination.type === 'character'`
 
 ### Selection highlight
 

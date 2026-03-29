@@ -62,40 +62,40 @@ function realToCycleGameMs(posInCycle) {
 }
 
 const PHASES = [
-  { label: 'Głęboka noc', startHour: 1, isDangerous: false },
-  { label: 'Przed świtem', startHour: 3, isDangerous: true },
-  { label: 'Świt', startHour: 5, isDangerous: true },
-  { label: 'Rano', startHour: 6, isDangerous: false },
-  { label: 'Południe', startHour: 11, isDangerous: false },
-  { label: 'Popołudnie', startHour: 14, isDangerous: false },
-  { label: 'Zmierzch', startHour: 18, isDangerous: false },
-  { label: 'Noc', startHour: 20, isDangerous: false },
-  { label: 'Północ', startHour: 23, isDangerous: false },
+  { label: 'Deep night', startHour: 1, isDangerous: false },
+  { label: 'Before dawn', startHour: 3, isDangerous: true },
+  { label: 'Dawn', startHour: 5, isDangerous: true },
+  { label: 'Morning', startHour: 6, isDangerous: false },
+  { label: 'Noon', startHour: 11, isDangerous: false },
+  { label: 'Afternoon', startHour: 14, isDangerous: false },
+  { label: 'Dusk', startHour: 18, isDangerous: false },
+  { label: 'Night', startHour: 20, isDangerous: false },
+  { label: 'Midnight', startHour: 23, isDangerous: false },
 ];
 
 const MONTHS = [
-  { name: 'stycznia', days: 31 },
-  { name: 'lutego', days: 28 },
-  { name: 'marca', days: 31 },
-  { name: 'kwietnia', days: 30 },
-  { name: 'maja', days: 31 },
-  { name: 'czerwca', days: 30 },
-  { name: 'lipca', days: 31 },
-  { name: 'sierpnia', days: 31 },
-  { name: 'września', days: 30 },
-  { name: 'października', days: 31 },
-  { name: 'listopada', days: 30 },
-  { name: 'grudnia', days: 31 },
+  { name: 'January', days: 31 },
+  { name: 'February', days: 28 },
+  { name: 'March', days: 31 },
+  { name: 'April', days: 30 },
+  { name: 'May', days: 31 },
+  { name: 'June', days: 30 },
+  { name: 'July', days: 31 },
+  { name: 'August', days: 31 },
+  { name: 'September', days: 30 },
+  { name: 'October', days: 31 },
+  { name: 'November', days: 30 },
+  { name: 'December', days: 31 },
 ];
 
 const DAYS_OF_WEEK = [
-  'Poniedziałek',
-  'Wtorek',
-  'Środa',
-  'Czwartek',
-  'Piątek',
-  'Sobota',
-  'Niedziela',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
 ];
 
 const JAN1_2026_DOW = 3;
@@ -186,7 +186,7 @@ export function createClock(startDayOfYear) {
 - [ ] **Step 2: Open `index.html` in a browser and verify the clock works**
 
 Expected:
-- Time display (e.g. "Rano  08:30") updates and hours advance correctly
+- Time display (e.g. "Morning  08:30") updates and hours advance correctly
 - The game cycle completes (midnight to midnight) in roughly 3 min 44 sec at 1× speed
 - No console errors
 
@@ -345,10 +345,10 @@ export function createDayDisplay({ mount }) {
   timelineLabelsEl.className = 'day-display__labels';
 
   const nightLabelEl = document.createElement('span');
-  nightLabelEl.textContent = 'Noc';
+  nightLabelEl.textContent = 'Night';
 
   const dayLabelEl = document.createElement('span');
-  dayLabelEl.textContent = 'Dzień';
+  dayLabelEl.textContent = 'Day';
 
   timelineLabelsEl.append(nightLabelEl, dayLabelEl);
   timelineEl.append(timelineTrackEl, timelineLabelsEl);
@@ -361,13 +361,13 @@ export function createDayDisplay({ mount }) {
 
   return {
     update({ hour, minute, phase, dayNumber, date, sliderFraction }) {
-      const icon = phase.label === 'Świt' ? ' ☠' : phase.isDangerous ? ' ⚠' : '';
+      const icon = phase.label === 'Dawn' ? ' ☠' : phase.isDangerous ? ' ⚠' : '';
 
       phaseEl.textContent = `${phase.label}${icon}  ${pad(hour)}:${pad(minute)}`;
       phaseEl.className = `day-display__phase${phase.isDangerous ? ' day-display__phase--dangerous' : ''}`;
       timelineEl.style.setProperty('--time-percent', `${sliderFraction * 100}%`);
       timelineThumbEl.className = `day-display__thumb${phase.isDangerous ? ' day-display__thumb--dangerous' : ''}`;
-      dateEl.textContent = `${date.day} ${date.monthName} · ${date.dayOfWeekName} · Dzień ${dayNumber}`;
+      dateEl.textContent = `${date.day} ${date.monthName} · ${date.dayOfWeekName} · Day ${dayNumber}`;
     },
   };
 }
@@ -399,8 +399,8 @@ After all tasks are complete, do a full manual pass:
 - [ ] Open `index.html`, set speed to 1×, watch one full cycle (~3 min 44 sec)
 - [ ] Night (20:00–06:00): lasts ~3 min, thumb moves slowly through the wide night section
 - [ ] Day (06:00–20:00): lasts ~44 sec, thumb zips through the narrow day section
-- [ ] Hours displayed (e.g. "Popołudnie  14:23") advance correctly throughout
-- [ ] Phase names change at the correct hours (Rano at 06:00, Zmierzch at 18:00, Noc at 20:00, etc.)
+- [ ] Hours displayed (e.g. "Afternoon  14:23") advance correctly throughout
+- [ ] Phase names change at the correct hours (Morning at 06:00, Dusk at 18:00, Night at 20:00, etc.)
 - [ ] Speed buttons (2×, 4×, 10×) still multiply both day and night equally
 - [ ] Blood stat drains during day (check player panel — should drain fast during 06:00–20:00)
 - [ ] Hunt action completes in ~12.5 sec real time regardless of day/night

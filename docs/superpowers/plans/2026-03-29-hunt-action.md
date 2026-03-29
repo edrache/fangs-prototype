@@ -927,7 +927,7 @@ function getHuntStatusText(character, notifications) {
     (n) => n.type === 'hunt_success' && n.characterId === character.id,
   );
 
-  if (hasSuccess) return { text: '✓ Polowanie zakończone sukcesem', modifier: 'success' };
+  if (hasSuccess) return { text: '✓ Hunt successful', modifier: 'success' };
   if (!character.hunt) return null;
   if (character.hunt.phase === 'moving') return { text: '🏹 Zmierza do celu...', modifier: null };
 
@@ -1080,7 +1080,7 @@ Find the `<style>` block in `index.html` and add:
 Start a hunt at `1×` speed. Verify the player's card shows:
 - `🏹 Zmierza do celu...` while moving to NPC
 - `🏹 Polowanie... X%` (incrementing) during hunt phase
-- `✓ Polowanie zakończone sukcesem` briefly after success
+- `✓ Hunt successful` briefly after success
 
 No console errors.
 

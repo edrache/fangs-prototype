@@ -35,41 +35,41 @@ const RATIO = GAME_DAY_MS / DAY_REAL_MS;  // 288 — game ms per real ms
 
 // Sorted ascending by startHour. Entries before midnight (1, 3, 5) come first.
 // getPhase() scans linearly; last match wins. Hour 0 matches nothing → falls
-// back to the final entry (Północ), which is correct: 0:00 is still "Północ".
+// back to the final entry (Midnight), which is correct: 0:00 is still "Midnight".
 const PHASES = [
-  { label: 'Głęboka noc',  startHour: 1,  isDangerous: false },
-  { label: 'Przed świtem', startHour: 3,  isDangerous: true  },
-  { label: 'Świt',         startHour: 5,  isDangerous: true  },
-  { label: 'Rano',         startHour: 6,  isDangerous: false },
-  { label: 'Południe',     startHour: 11, isDangerous: false },
-  { label: 'Popołudnie',   startHour: 14, isDangerous: false },
-  { label: 'Zmierzch',     startHour: 18, isDangerous: false },
-  { label: 'Noc',          startHour: 20, isDangerous: false },
-  { label: 'Północ',       startHour: 23, isDangerous: false },
+  { label: 'Deep night',  startHour: 1,  isDangerous: false },
+  { label: 'Before dawn', startHour: 3,  isDangerous: true  },
+  { label: 'Dawn',         startHour: 5,  isDangerous: true  },
+  { label: 'Morning',         startHour: 6,  isDangerous: false },
+  { label: 'Noon',     startHour: 11, isDangerous: false },
+  { label: 'Afternoon',   startHour: 14, isDangerous: false },
+  { label: 'Dusk',     startHour: 18, isDangerous: false },
+  { label: 'Night',          startHour: 20, isDangerous: false },
+  { label: 'Midnight',       startHour: 23, isDangerous: false },
 ];
 
 const MONTHS = [
-  { name: 'stycznia',    days: 31 },
-  { name: 'lutego',      days: 28 },
-  { name: 'marca',       days: 31 },
-  { name: 'kwietnia',    days: 30 },
-  { name: 'maja',        days: 31 },
-  { name: 'czerwca',     days: 30 },
-  { name: 'lipca',       days: 31 },
-  { name: 'sierpnia',    days: 31 },
-  { name: 'września',    days: 30 },
-  { name: 'października', days: 31 },
-  { name: 'listopada',   days: 30 },
-  { name: 'grudnia',     days: 31 },
+  { name: 'January',    days: 31 },
+  { name: 'February',      days: 28 },
+  { name: 'March',       days: 31 },
+  { name: 'April',    days: 30 },
+  { name: 'May',        days: 31 },
+  { name: 'June',     days: 30 },
+  { name: 'July',       days: 31 },
+  { name: 'August',    days: 31 },
+  { name: 'September',    days: 30 },
+  { name: 'October', days: 31 },
+  { name: 'November',   days: 30 },
+  { name: 'December',     days: 31 },
 ];
 
-const DAYS_OF_WEEK = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 // Jan 1 2026 = Thursday = index 3 (0=Mon … 6=Sun)
 const JAN1_2026_DOW = 3;
 
 function getPhase(hour) {
-  let result = PHASES[PHASES.length - 1]; // Północ — default for hour 0
+  let result = PHASES[PHASES.length - 1]; // Midnight — default for hour 0
   for (const phase of PHASES) {
     if (phase.startHour <= hour) {
       result = phase;
@@ -126,36 +126,36 @@ Load `http://127.0.0.1:8080/index.html`, open DevTools console and paste:
 const { createClock } = await import('./simulation/clock.js');
 const c = createClock(1); // Jan 1 2026
 
-// Hour 0 → Północ (wraps from previous day)
+// Hour 0 → Midnight (wraps from previous day)
 const t0 = c.getState(0);
 console.assert(t0.hour === 0, 'hour');
-console.assert(t0.phase.label === 'Północ', `phase at 0h: ${t0.phase.label}`);
+console.assert(t0.phase.label === 'Midnight', `phase at 0h: ${t0.phase.label}`);
 
-// 37 500 real ms → 3:00 game time → Przed świtem
+// 37 500 real ms → 3:00 game time → Before dawn
 const t3 = c.getState(37_500);
 console.assert(t3.hour === 3, `hour at 3h: ${t3.hour}`);
-console.assert(t3.phase.label === 'Przed świtem', `phase: ${t3.phase.label}`);
+console.assert(t3.phase.label === 'Before dawn', `phase: ${t3.phase.label}`);
 console.assert(t3.phase.isDangerous === true, 'dangerous');
 
-// 62 500 real ms → 5:00 → Świt
+// 62 500 real ms → 5:00 → Dawn
 const t5 = c.getState(62_500);
-console.assert(t5.phase.label === 'Świt', `phase: ${t5.phase.label}`);
+console.assert(t5.phase.label === 'Dawn', `phase: ${t5.phase.label}`);
 
-// 75 000 real ms → 6:00 → Rano
+// 75 000 real ms → 6:00 → Morning
 const t6 = c.getState(75_000);
-console.assert(t6.phase.label === 'Rano', `phase: ${t6.phase.label}`);
+console.assert(t6.phase.label === 'Morning', `phase: ${t6.phase.label}`);
 
 // 300 000 real ms → day 2
 const tDay2 = c.getState(300_000);
 console.assert(tDay2.dayNumber === 2, `dayNumber: ${tDay2.dayNumber}`);
 console.assert(tDay2.date.day === 2, `calendar day: ${tDay2.date.day}`);
-console.assert(tDay2.date.monthName === 'stycznia', `month: ${tDay2.date.monthName}`);
-console.assert(tDay2.date.dayOfWeekName === 'Piątek', `weekday: ${tDay2.date.dayOfWeekName}`);
+console.assert(tDay2.date.monthName === 'January', `month: ${tDay2.date.monthName}`);
+console.assert(tDay2.date.dayOfWeekName === 'Friday', `weekday: ${tDay2.date.dayOfWeekName}`);
 
 // startDayOfYear=31 → Jan 31 → Feb 1 on day 2
 const cFeb = createClock(31);
 const tFeb = cFeb.getState(300_000);
-console.assert(tFeb.date.monthName === 'lutego', `Feb: ${tFeb.date.monthName}`);
+console.assert(tFeb.date.monthName === 'February', `Feb: ${tFeb.date.monthName}`);
 
 console.log('All clock assertions passed');
 ```
@@ -198,10 +198,10 @@ export function createDayDisplay({ mount }) {
 
   return {
     update({ hour, minute, phase, dayNumber, date }) {
-      const icon = phase.label === 'Świt' ? ' ☠' : phase.isDangerous ? ' ⚠' : '';
+      const icon = phase.label === 'Dawn' ? ' ☠' : phase.isDangerous ? ' ⚠' : '';
       phaseEl.textContent = `${phase.label}${icon}  ${pad(hour)}:${pad(minute)}`;
       phaseEl.className = `day-display__phase${phase.isDangerous ? ' day-display__phase--dangerous' : ''}`;
-      dateEl.textContent = `${date.day} ${date.monthName} · ${date.dayOfWeekName} · Dzień ${dayNumber}`;
+      dateEl.textContent = `${date.day} ${date.monthName} · ${date.dayOfWeekName} · Day ${dayNumber}`;
     },
   };
 }
@@ -383,19 +383,19 @@ Check 1 — initial display:
 Check 2 — time advances:
 - Pause simulation (press `0`), then in console run:
   ```js
-  window.advanceTime(37_500); // → 3:00 → Przed świtem
+  window.advanceTime(37_500); // → 3:00 → Before dawn
   ```
-  Line 1 should turn amber and read `PRZED ŚWITEM ⚠  03:00`.
+  Line 1 should turn amber and read `BEFORE DAWN ⚠  03:00`.
 
 - Then:
   ```js
-  window.advanceTime(25_000); // → 5:00 → Świt
+  window.advanceTime(25_000); // → 5:00 → Dawn
   ```
-  Line 1 should read `ŚWIT ☠  05:00`.
+  Line 1 should read `DAWN ☠  05:00`.
 
 - Then:
   ```js
-  window.advanceTime(12_500); // → 6:00 → Rano
+  window.advanceTime(12_500); // → 6:00 → Morning
   ```
   Colour returns to white: `RANO  06:00`.
 

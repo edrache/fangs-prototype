@@ -26,7 +26,7 @@ function assignNestBuilding(buildings, districts) {
   );
 
   nest.special = 'nest';
-  nest.description = 'Schronienie wampirów. Tu śpią podczas dnia.';
+  nest.description = 'Vampire refuge. They sleep here during the day.';
 }
 
 function toRenderStreet(street) {

@@ -40,3 +40,10 @@ Vanilla JS with no external dependencies. Rendering via Canvas API (`<canvas>`).
 - Strict separation of generation logic from rendering
 - Characters move only along streets (graph of intersection nodes)
 - Streets form either a grid or organic layout — decision to be made in Stage 1
+
+### Time semantics
+
+- Default to **game time**, not real time, for all simulation mechanics, decay systems, cooldowns, durations, and balancing logic.
+- Treat real time as a transport/input layer only when wiring frame deltas, wall-clock UI, or browser timing primitives such as `requestAnimationFrame` and `performance.now()`.
+- If a change touches time and it is not completely clear whether it should use real time or game time, stop and ask instead of guessing.
+- In this project, if there is any ambiguity, the correct default is almost always **game time**.

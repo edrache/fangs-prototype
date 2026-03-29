@@ -14,8 +14,16 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 - 5-minute real-time day/night cycle with a seeded 2026 calendar
 - Time bar showing named phases, full date, and a color-split day/night slider with phase dividers
 - Hunt action for player characters: pick an NPC, close in, freeze both characters, and resolve the hunt with a timed action ring
+- Blood stat for player characters: passive decay over game time, slower drain inside the player district, refill on successful hunt, and a persistent hunger warning below 20%
+- Text/debug hooks for browser automation via `window.render_game_to_text()` and `window.advanceTime(ms)`
 
 ## Running
+
+Install the only current dependency once:
+
+```bash
+npm install
+```
 
 Open `index.html` via a local server (ES modules require HTTP):
 
@@ -30,6 +38,15 @@ For browser-based visual checks used during development:
 node scripts/local_playwright_check.mjs http://127.0.0.1:8080/index.html output/web-game
 ```
 
+## Time Semantics
+
+This project uses both **real time** and **game time**, and they are not interchangeable.
+
+- Use **game time** for simulation mechanics: blood decay, hunt duration, cooldowns, day/night progression, and any balancing logic.
+- Use **real time** only for browser/frame plumbing such as `requestAnimationFrame`, `performance.now()`, and raw frame deltas entering the main loop.
+- The game clock currently maps **5 real minutes** to **24 in-game hours**.
+- If you are modifying a time-based system and it is not obvious which clock should drive it, the intended default is almost always **game time**.
+
 ## Controls
 
 The app now exposes an in-browser control panel plus the same values in `main.js`.
@@ -40,11 +57,11 @@ The top panel contains sliders for:
 
 | Control | Description |
 |---|---|
-| `Seed` | Deterministic seed for the whole city |
-| `Districts` | Target number of districts used to derive the major grid |
-| `Street Density` | Density of secondary streets inside districts |
-| `Building Density` | Fraction of valid parcels that should be filled with buildings |
-| `Characters` | Number of walkers spawned onto the street graph |
+| `Seed` | Deterministic seed for the whole city (`0..99999`) |
+| `Districts` | Target number of districts used to derive the major grid (`2..12`) |
+| `Street Density` | Density of secondary streets inside districts (`1..10`) |
+| `Building Density` | Fraction of valid parcels that should be filled with buildings (`1..10`) |
+| `Characters` | Number of walkers spawned onto the street graph (`1..50`) |
 
 Changing sliders does not immediately regenerate the map. Click `Regenerate` to apply the pending values.
 
@@ -88,6 +105,8 @@ Below the canvas, the app also shows a dedicated player-character panel:
 | `Character N` cards | One card per player-controlled character |
 | Status line | Shows `idle`, `moving`, `target: node N`, or `following: character N` |
 | Hunt line | Shows `HUNT: TRACKING TARGET`, `HUNT: IN PROGRESS X%`, or `HUNT SUCCESSFUL` when relevant |
+| Blood row | Shows the current Blood bar and floored numeric value |
+| Hunger notice | Shows `⚠ HUNGER!` while Blood is below the hunger threshold |
 | Card click | Opens the same action menu as clicking that player character on the map |
 
 The top-left district is reserved as the player district. It is outlined in dark red as a topmost overlay so the border stays visible, and the initial player-controlled walkers spawn on street nodes inside that district after every regeneration.
@@ -122,6 +141,23 @@ const params = {
 ```
 
 After changing defaults in `main.js`, refresh the page.
+
+## Debug Hooks
+
+The browser exposes two helpers on `window`:
+
+| Hook | Description |
+|---|---|
+| `window.render_game_to_text()` | Returns a JSON string describing the current visible/simulation state |
+| `window.advanceTime(ms)` | Advances the simulation deterministically by the provided **real-time** milliseconds |
+
+Typical console usage:
+
+```js
+JSON.parse(window.render_game_to_text())
+window.advanceTime(60_000)
+JSON.parse(window.render_game_to_text()).characters.filter((c) => c.isPlayer)
+```
 
 ## Internal Tuning Variables
 
@@ -168,6 +204,9 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 | `INTERSECTION_FILL` | Small debug dots drawn at graph intersections |
 | `CHARACTER_RADIUS` | Radius of each moving dot character |
 | `CHARACTER_TRAIL_STEPS` | Maximum number of recent trail points rendered |
+| `SELECTION_RING_RADIUS` | Radius of the selected-character ring |
+| `HUNT_RING_RADIUS` | Radius of the hunt progress ring |
+| `NOTIFICATION_LIFETIME_MS` | Lifetime of hunt-success notifications in real milliseconds |
 
 ### Characters (`entities/character.js`)
 
@@ -176,6 +215,9 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 | `CHARACTER_COLORS` | Repeating palette used for spawned walkers |
 | `TRAIL_LENGTH` | Maximum number of stored trail points per character |
 | `speed: rng.float(3, 20)` | Default movement speed range in pixels per second |
+| `blood` | Current Blood value assigned on character creation |
+| `maxBlood` | Maximum Blood capacity for the character |
+| `hungry` | Whether the character is currently below the hunger threshold |
 
 To change how fast characters move, edit the `speed` assignment inside `createCharacter(...)` in `entities/character.js`.
 Examples:
@@ -185,6 +227,81 @@ speed: rng.float(1, 8), // slower range
 speed: rng.float(20, 45), // faster range
 speed: 70, // same speed for every character
 ```
+
+### Blood simulation (`simulation/blood.js`)
+
+| Variable | Description |
+|---|---|
+| `HUNGER_THRESHOLD` | Hunger threshold as a fraction of `maxBlood` |
+| `DECAY_PER_HOUR` | Blood decay per **game hour** as a fraction of `maxBlood` |
+| `DISTRICT_DECAY_MULTIPLIER` | Blood decay multiplier while inside the player-owned district |
+| `HUNT_BLOOD_GAIN` | Flat Blood refill applied on successful hunt |
+| `updateBlood(characters, dt, playerDistricts)` | Applies Blood decay using **game-time milliseconds** |
+| `applyHuntBloodGain(character)` | Refills Blood and re-evaluates hunger state |
+
+Current defaults:
+
+```js
+const HUNGER_THRESHOLD = 0.2;
+const DECAY_PER_HOUR = 0.75 / 24; // 75% of maxBlood per full game day
+const DISTRICT_DECAY_MULTIPLIER = 0.5;
+const HUNT_BLOOD_GAIN = 45;
+```
+
+### Clock and day/night simulation (`simulation/clock.js`)
+
+| Variable | Description |
+|---|---|
+| `DAY_REAL_MS` | Real-time duration of one full in-game day |
+| `GAME_DAY_MS` | One in-game day in simulation milliseconds |
+| `GAME_CLOCK_RATIO` | Multiplier converting real milliseconds into game milliseconds |
+| `GAME_HOUR_SIM_MS` | Real-time duration of one in-game hour |
+| `PHASES` | Named day/night phases and whether they are dangerous |
+| `MONTHS` | 2026 month table used for the calendar readout |
+| `DAYS_OF_WEEK` | Weekday labels used by the clock |
+| `JAN1_2026_DOW` | Day-of-week anchor for the seeded 2026 calendar |
+
+### Hunt simulation (`simulation/hunt.js`)
+
+| Variable | Description |
+|---|---|
+| `HUNT_DURATION_MS` | Duration of the active hunt phase in **real milliseconds** |
+| `startHunt(playerChar, npcChar)` | Locks an NPC, starts pursuit, and seeds hunt state |
+| `updateHunts(characters, dt, onHuntComplete)` | Advances pursuit and active hunt countdown |
+| `cancelHunt(playerChar, characters)` | Cancels the active hunt and releases the NPC |
+
+### Slider controls (`ui/controls.js`)
+
+| Variable | Description |
+|---|---|
+| `CONTROL_CONFIG` | Slider definitions, labels, and min/max/step ranges for the top panel |
+
+### Time-speed controls (`ui/timeControls.js`)
+
+| Variable | Description |
+|---|---|
+| `SPEEDS` | Available time-scale buttons and keyboard mappings |
+
+### Day display (`ui/dayDisplay.js`)
+
+| Variable | Description |
+|---|---|
+| `DAY_MINUTES` | Minutes in a full in-game day |
+| `NIGHT_START_HOUR` | Hour used as the visual start of the timeline |
+| `DAY_START_HOUR` | Hour where the day segment begins |
+| `PHASE_DIVIDER_HOURS` | Hours rendered as divider lines on the slider |
+
+### Interaction (`ui/interaction.js`)
+
+| Variable | Description |
+|---|---|
+| `CHARACTER_HIT_RADIUS` | Hit radius for selecting a character on the canvas |
+| `STREET_NODE_FALLBACK_RADIUS` | Max fallback search radius when no street node is directly under the cursor |
+| `MENU_WIDTH` | Width of the popup action menu |
+| `MENU_ITEM_HEIGHT` | Height of each popup menu row |
+| `MENU_PADDING` | Internal popup menu padding |
+| `NPC_MENU_ITEMS` | Menu items shown when targeting an NPC action menu |
+| `HUNTING_MENU_ITEMS` | Menu items shown while a player character is already hunting |
 
 ## Character Interaction
 
@@ -197,7 +314,9 @@ Current MVP interaction on the canvas:
 5. For `Hunt`, click an NPC from the open player menu or enter hunt-picking and confirm the target NPC.
 6. Once the hunter reaches the target, both characters stop in the same place and a hunt timer ring starts counting down.
 7. The default hunt duration is `1` game hour, which equals `12.5` real seconds at `1×` speed because the game clock runs at `5` real minutes per full day.
-8. Press `Esc` or click the selected player character again to clear the selection.
+8. Blood decays continuously in the background over **game time**; while a player character stays in the player district, decay is reduced.
+9. A successful hunt restores Blood by a flat amount and can clear the hunger warning immediately.
+10. Press `Esc` or click the selected player character again to clear the selection.
 
 The interaction layer maps a street click to the nearest reachable street-graph node, keeps it as a preview target, and only commits the reroute on the second matching click. After a destination is confirmed, the selected player character returns to the popup-menu state so another action can be chosen immediately. NPCs remain visible and can still be used as follow targets, but they do not open the action menu.
 
@@ -214,10 +333,11 @@ The interaction layer maps a street click to the nearest reachable street-graph 
 9. `ui/timeControls.js` manages simulation speed buttons, keyboard shortcuts, and the active time-scale state.
 10. `ui/dayDisplay.js` renders the current phase, date, and the visual day/night timeline slider.
 11. `simulation/hunt.js` owns hunt state, target locking, countdown progress, cancellation, and completion.
-12. `ui/interaction.js` handles canvas hit testing, player-character selection, dynamic action menus, hunt targeting, and street-click rerouting.
-13. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection, movement state, and hunt progress.
-14. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, hunt timers, success notifications, the player-district border, and debug intersections.
-15. `main.js` regenerates the city, spawns player characters inside the player-owned district, wires the clock and hunt simulation into the UI, and exposes debug state through `render_game_to_text()`.
+12. `simulation/blood.js` applies Blood decay and hunt-based Blood restoration.
+13. `ui/interaction.js` handles canvas hit testing, player-character selection, dynamic action menus, hunt targeting, and street-click rerouting.
+14. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection, movement state, hunt progress, Blood, and hunger state.
+15. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, hunt timers, success notifications, the player-district border, and debug intersections.
+16. `main.js` regenerates the city, spawns player characters inside the player-owned district, wires the clock, Blood, and hunt simulation into the UI, and exposes debug state through `render_game_to_text()`.
 
 ## Architecture
 
@@ -226,8 +346,8 @@ generator/     — Procedural city generation (districts, streets, buildings, gr
 pathfinding/   — BFS route finding on the street graph
 entities/      — Character spawning and movement updates
 renderer/      — Stateless Canvas renderer
-ui/            — Control panel, time controls, and canvas interaction flow
-simulation/    — Pure simulation helpers such as the day/night clock and hunt action state
+ui/            — Control panel, time controls, player panel, and canvas interaction flow
+simulation/    — Pure simulation helpers such as the day/night clock, Blood system, and hunt action state
 scripts/       — Local development helpers (including Playwright screenshot checks)
 main.js        — Game loop and high-level parameters
 ```

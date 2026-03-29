@@ -3,7 +3,8 @@ import { generateCity } from './generator/city.js';
 import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
-import { createClock } from './simulation/clock.js';
+import { createClock, GAME_CLOCK_RATIO } from './simulation/clock.js';
+import { updateBlood, applyHuntBloodGain } from './simulation/blood.js';
 import { startHunt, updateHunts, cancelHunt } from './simulation/hunt.js';
 import { createDayDisplay } from './ui/dayDisplay.js';
 import { createInteractionController } from './ui/interaction.js';
@@ -49,6 +50,8 @@ function onHuntComplete(playerChar, npcChar) {
   if (npcChar) {
     state.characters = state.characters.filter((character) => character.id !== npcChar.id);
   }
+
+  applyHuntBloodGain(playerChar);
 
   state.notifications.push({
     type: 'hunt_success',
@@ -184,6 +187,11 @@ function stepSimulation(deltaMs) {
     const currentStep = Math.min(stepMs, remaining);
     updateCharacters(currentStep / 1000);
     updateHunts(state.characters, currentStep, onHuntComplete);
+    updateBlood(
+      state.characters,
+      currentStep * GAME_CLOCK_RATIO,
+      state.city?.districts.filter((district) => district.isPlayerOwned),
+    );
     remaining -= currentStep;
   }
 
@@ -259,6 +267,9 @@ window.render_game_to_text = () => {
       isPlayer: character.isPlayer,
       capabilities: [...(character.capabilities ?? [])],
       color: character.color,
+      blood: Number(character.blood.toFixed(2)),
+      maxBlood: character.maxBlood,
+      hungry: character.hungry,
       pos: {
         x: Number(character.pos.x.toFixed(2)),
         y: Number(character.pos.y.toFixed(2)),

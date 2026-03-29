@@ -255,6 +255,9 @@ export function createCharacter(intersections, rng, colorIndex) {
     capabilities: [],
     hunt: null,
     frozen: false,
+    blood: 100,
+    maxBlood: 100,
+    hungry: false,
     rng: createLocalRNG(rng.int(1, 0x7fffffff)),
   };
 

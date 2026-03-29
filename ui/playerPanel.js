@@ -56,8 +56,33 @@ function buildRenderSignature(characters, interactionState, notifications) {
       pathLength: character.path?.length ?? 0,
       destination: character.destination,
       hunt: character.hunt,
+      blood: character.blood,
+      maxBlood: character.maxBlood,
+      hungry: character.hungry,
     })),
   });
+}
+
+function getBloodValue(character) {
+  if (Number.isFinite(character?.blood)) {
+    return character.blood;
+  }
+
+  return 100;
+}
+
+function getMaxBloodValue(character) {
+  if (Number.isFinite(character?.maxBlood) && character.maxBlood > 0) {
+    return character.maxBlood;
+  }
+
+  return 100;
+}
+
+function getBloodFillPercent(character) {
+  const maxBlood = getMaxBloodValue(character);
+  const blood = getBloodValue(character);
+  return Math.max(0, Math.min(100, (blood / maxBlood) * 100));
 }
 
 function createCard(character, isSelected, notifications) {
@@ -89,17 +114,48 @@ function createCard(character, isSelected, notifications) {
   hint.className = 'player-card__hint';
   hint.textContent = isSelected ? 'Selected on map' : 'Click to open menu';
 
+  const bloodRow = document.createElement('div');
+  bloodRow.className = 'player-card__blood';
+
+  const bloodLabel = document.createElement('span');
+  bloodLabel.className = 'player-card__blood-label';
+  bloodLabel.textContent = 'Blood';
+
+  const bloodTrack = document.createElement('div');
+  bloodTrack.className = 'blood-bar';
+  bloodTrack.setAttribute('role', 'progressbar');
+  bloodTrack.setAttribute('aria-valuemin', '0');
+  bloodTrack.setAttribute('aria-valuemax', String(getMaxBloodValue(character)));
+  bloodTrack.setAttribute('aria-valuenow', String(Math.round(getBloodValue(character))));
+  bloodTrack.style.setProperty('--blood-fill-percent', `${getBloodFillPercent(character)}%`);
+  bloodTrack.dataset.hungry = character?.hungry ? 'true' : 'false';
+
+  const bloodFill = document.createElement('span');
+  bloodFill.className = 'blood-bar__fill';
+  bloodTrack.append(bloodFill);
+
+  const bloodValue = document.createElement('span');
+  bloodValue.className = 'player-card__blood-value';
+  bloodValue.textContent = String(Math.floor(getBloodValue(character)));
+
+  bloodRow.append(bloodLabel, bloodTrack, bloodValue);
+
+  const hungerNotice = document.createElement('div');
+  hungerNotice.className = 'hunger-notice';
+  hungerNotice.textContent = '⚠ HUNGER!';
+  hungerNotice.hidden = !character?.hungry;
+
   top.append(swatch, title);
 
   if (huntStatusText) {
     const huntStatus = document.createElement('div');
     huntStatus.className = 'hunt-status';
     huntStatus.textContent = huntStatusText;
-    card.append(top, status, huntStatus, hint);
+    card.append(top, status, huntStatus, hungerNotice, bloodRow, hint);
     return card;
   }
 
-  card.append(top, status, hint);
+  card.append(top, status, hungerNotice, bloodRow, hint);
   return card;
 }
 

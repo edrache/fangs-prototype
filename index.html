@@ -405,6 +405,72 @@
       color: #aab4d8;
     }
 
+    .player-card__blood {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      line-height: 1;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #8e9cc8;
+    }
+
+    .player-card__blood-label,
+    .player-card__blood-value {
+      white-space: nowrap;
+    }
+
+    .player-card__blood-value {
+      color: #edf1ff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .blood-bar {
+      position: relative;
+      height: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(161, 101, 113, 0.4);
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, rgba(66, 18, 30, 0.9), rgba(31, 9, 15, 0.96));
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.05),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .blood-bar__fill {
+      display: block;
+      width: var(--blood-fill-percent, 100%);
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #6e091d 0%, #b3152f 55%, #ff4161 100%);
+      box-shadow: 0 0 16px rgba(255, 60, 96, 0.35);
+      transition: width 180ms linear, filter 180ms ease;
+    }
+
+    .blood-bar[data-hungry="true"] {
+      border-color: rgba(255, 91, 118, 0.78);
+      background: linear-gradient(180deg, rgba(77, 16, 31, 0.96), rgba(36, 8, 15, 0.98));
+    }
+
+    .blood-bar[data-hungry="true"] .blood-bar__fill {
+      background: linear-gradient(90deg, #ff2244 0%, #ff4d67 55%, #ffd0d8 100%);
+      box-shadow: 0 0 18px rgba(255, 68, 102, 0.58);
+    }
+
+    .hunger-notice {
+      padding: 6px 8px;
+      border: 1px solid rgba(255, 92, 122, 0.35);
+      border-radius: 8px;
+      background: rgba(87, 15, 32, 0.52);
+      color: #fff0f3;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     .hunt-status {
       padding: 6px 8px;
       border: 1px solid rgba(255, 90, 120, 0.2);

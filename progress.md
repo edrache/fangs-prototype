@@ -73,5 +73,6 @@ Original prompt: od czego zaczniej implementacje? zrób to
 - Changed the top control panel to start collapsed on first load by default, with the toggle icon and `aria-expanded` state matching the collapsed view immediately after refresh.
 
 TODO
+- Implement Hunt action: `simulation/hunt.js`, capabilities array on characters, `hunt_picking`/`npc_menu_open` interaction modes, ring timer renderer, success notification, player panel status. Plan: `docs/superpowers/plans/2026-03-29-hunt-action.md`.
 - Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.
 - Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.

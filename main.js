@@ -1,4 +1,5 @@
 import { createCharacter, setCharacterDestination, updateCharacter } from './entities/character.js';
+import { TRAIT_DEFINITIONS, getTraitDefinitionById, VampireTrait } from './entities/traits/index.js';
 import { generateCity } from './generator/city.js';
 import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
@@ -84,8 +85,43 @@ const interaction = createInteractionController({
 const playerPanel = createPlayerPanel({
   mount: playerPanelMount,
   getCharacters: () => state.characters,
+  availableTraits: TRAIT_DEFINITIONS.map(({ id, label }) => ({ id, label })),
   onSelectCharacter(characterId) {
-    interaction.openMenuForCharacter(characterId);
+    if (interaction.openMenuForCharacter(characterId)) {
+      canvas.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      render();
+    }
+  },
+  onAddTrait(characterId, traitId) {
+    const character = state.characters.find((candidate) => candidate.id === characterId);
+    const definition = getTraitDefinitionById(traitId);
+
+    if (!character || !definition) {
+      return;
+    }
+
+    if ((character.traits ?? []).some((trait) => trait?.id === traitId || trait === traitId)) {
+      return;
+    }
+
+    character.traits.push(definition.trait);
+    render();
+  },
+  onRemoveTrait(characterId, traitId) {
+    const character = state.characters.find((candidate) => candidate.id === characterId);
+    if (!character) {
+      return;
+    }
+
+    const nextTraits = (character.traits ?? []).filter(
+      (trait) => trait?.id !== traitId && trait !== traitId,
+    );
+
+    if (nextTraits.length === character.traits.length) {
+      return;
+    }
+
+    character.traits = nextTraits;
     render();
   },
 });
@@ -141,6 +177,7 @@ function createCharacters(city, seed, count) {
     character.isPlayer = index < PLAYER_COUNT;
     if (character.isPlayer) {
       character.capabilities = ['hunt'];
+      character.traits.push(VampireTrait);
     }
 
     if (character.isPlayer && playerNodes.length > 0) {
@@ -163,8 +200,13 @@ function updateCharacters(dtSeconds) {
     return;
   }
 
+  const ctx = {
+    mapWidth: state.city.width,
+    mapHeight: state.city.height,
+  };
+
   for (const character of state.characters) {
-    updateCharacter(character, dtSeconds, state.city.intersections, state.characters);
+    updateCharacter(character, dtSeconds, state.city.intersections, state.characters, ctx);
   }
 }
 
@@ -266,6 +308,7 @@ window.render_game_to_text = () => {
       id: character.id,
       isPlayer: character.isPlayer,
       capabilities: [...(character.capabilities ?? [])],
+      traits: (character.traits ?? []).map((trait) => trait.id),
       color: character.color,
       blood: Number(character.blood.toFixed(2)),
       maxBlood: character.maxBlood,

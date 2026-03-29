@@ -3,6 +3,14 @@ const DECAY_PER_HOUR = 0.75 / 24;
 const DISTRICT_DECAY_MULTIPLIER = 0.5;
 const HUNT_BLOOD_GAIN = 45;
 
+function hasVampireTrait(character) {
+  if (!character || !Array.isArray(character.traits)) {
+    return false;
+  }
+
+  return character.traits.some((trait) => trait === 'vampire' || trait?.id === 'vampire');
+}
+
 function isInPlayerDistrict(character, playerDistricts) {
   if (!character || !Array.isArray(playerDistricts) || playerDistricts.length === 0) {
     return false;
@@ -44,7 +52,7 @@ export function updateBlood(characters, dt, playerDistricts) {
   const deltaMs = Math.max(0, dt);
 
   for (const character of characters) {
-    if (!character?.isPlayer) {
+    if (!hasVampireTrait(character)) {
       continue;
     }
 

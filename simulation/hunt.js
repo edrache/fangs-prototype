@@ -2,6 +2,7 @@ import { setCharacterDestination } from '../entities/character.js';
 import { GAME_HOUR_SIM_MS } from './clock.js';
 
 const HUNT_DURATION_MS = GAME_HOUR_SIM_MS;
+const HUNT_CONTACT_DISTANCE = 20;
 
 function clearCharacterMovement(character) {
   if (!character) {
@@ -12,10 +13,17 @@ function clearCharacterMovement(character) {
   character.path = [];
   character.to = character.from;
   character.progress = 0;
+  character.flyTarget = null;
 }
 
 function findCharacterById(characters, characterId) {
   return characters.find((character) => character.id === characterId) ?? null;
+}
+
+function getDistance(a, b) {
+  const dx = (a?.x ?? 0) - (b?.x ?? 0);
+  const dy = (a?.y ?? 0) - (b?.y ?? 0);
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 export function startHunt(playerChar, npcChar) {
@@ -23,10 +31,10 @@ export function startHunt(playerChar, npcChar) {
     return;
   }
 
+  clearCharacterMovement(playerChar);
   playerChar.frozen = false;
   npcChar.frozen = true;
-  npcChar.destination = null;
-  npcChar.path = [];
+  clearCharacterMovement(npcChar);
   playerChar.hunt = {
     phase: 'moving',
     targetId: npcChar.id,
@@ -66,8 +74,9 @@ export function updateHunts(characters, dt, onHuntComplete) {
     if (character.hunt.phase === 'moving') {
       const reachedTargetNode = character.path.length === 0 && character.from === npc.to;
       const reachedNpcOnSegment = isHunterAlignedWithNpcOnSegment(character, npc);
+      const reachedNpcByPosition = getDistance(character.pos, npc.pos) <= HUNT_CONTACT_DISTANCE;
 
-      if (reachedTargetNode || reachedNpcOnSegment) {
+      if (reachedTargetNode || reachedNpcOnSegment || reachedNpcByPosition) {
         character.hunt.phase = 'hunting';
         character.hunt.elapsed = 0;
         character.frozen = true;

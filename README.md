@@ -15,6 +15,7 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 - Time bar showing named phases, full date, and a color-split day/night slider with phase dividers
 - Hunt action for player characters: pick an NPC, close in, freeze both characters, and resolve the hunt with a timed action ring
 - Blood stat for player characters: passive decay over game time, slower drain inside the player district, refill on successful hunt, and a persistent hunger warning below 20%
+- Trait system with `Vampire` and `Flying`, including in-panel trait management for player characters
 - Text/debug hooks for browser automation via `window.render_game_to_text()` and `window.advanceTime(ms)`
 
 ## Running
@@ -104,10 +105,13 @@ Below the canvas, the app also shows a dedicated player-character panel:
 |---|---|
 | `Character N` cards | One card per player-controlled character |
 | Status line | Shows `idle`, `moving`, `target: node N`, or `following: character N` |
+| Traits row | Shows every currently assigned trait on that character |
 | Hunt line | Shows `HUNT: TRACKING TARGET`, `HUNT: IN PROGRESS X%`, or `HUNT SUCCESSFUL` when relevant |
 | Blood row | Shows the current Blood bar and floored numeric value |
 | Hunger notice | Shows `⚠ HUNGER!` while Blood is below the hunger threshold |
 | Card click | Opens the same action menu as clicking that player character on the map |
+| `+ Trait` | Opens a contextual menu listing all available traits for that character |
+| `- Traits` | Toggles trait-removal mode; while active, clicking a trait pill removes it from that character |
 
 The top-left district is reserved as the player district. It is outlined in dark red as a topmost overlay so the border stays visible, and the initial player-controlled walkers spawn on street nodes inside that district after every regeneration.
 
@@ -218,6 +222,8 @@ These constants shape generation behavior and visuals. Most day-to-day tweaking 
 | `blood` | Current Blood value assigned on character creation |
 | `maxBlood` | Maximum Blood capacity for the character |
 | `hungry` | Whether the character is currently below the hunger threshold |
+| `traits` | Array of attached trait objects such as `VampireTrait` or `FlyingTrait` |
+| `flyTarget` | Current straight-line destination used by `FlyingTrait` |
 
 To change how fast characters move, edit the `speed` assignment inside `createCharacter(...)` in `entities/character.js`.
 Examples:
@@ -227,6 +233,20 @@ speed: rng.float(1, 8), // slower range
 speed: rng.float(20, 45), // faster range
 speed: 70, // same speed for every character
 ```
+
+### Traits (`entities/traits/*.js`)
+
+| Trait | Description |
+|---|---|
+| `VampireTrait` | Marker trait used by Blood simulation and assigned to player characters by default |
+| `FlyingTrait` | Overrides street walking with straight-line movement and can pursue Hunt targets in the air |
+
+Trait registry:
+
+| Export | Description |
+|---|---|
+| `TRAIT_DEFINITIONS` | List of all traits exposed to the player-panel add-trait menu |
+| `getTraitDefinitionById(traitId)` | Resolves a trait object from the registry for runtime assignment |
 
 ### Blood simulation (`simulation/blood.js`)
 

@@ -279,17 +279,20 @@ export function createInteractionController({
   function openMenuForCharacter(characterId) {
     const character = getCharactersSafe().find((candidate) => candidate.id === characterId);
     if (!isPlayerCharacter(character)) {
-      return;
+      return false;
     }
 
     state.mode = 'menu_open';
     state.selectedCharacterId = characterId;
+    state.hoveredCharacterId = characterId;
     state.hoveredMenuItemIndex = null;
     state.targetNodeId = null;
     state.targetCharacterId = null;
     state.npcTargetCharacterId = null;
+    state.mousePos = null;
     emitChange();
     updateCursor();
+    return true;
   }
 
   function openNpcMenu(characterId) {

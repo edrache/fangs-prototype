@@ -73,6 +73,15 @@ function pushTrail(char) {
   clampTrail(char);
 }
 
+function buildTraitContext(intersections, characters, ctx = {}) {
+  return {
+    mapWidth: typeof ctx.mapWidth === 'number' ? ctx.mapWidth : 900,
+    mapHeight: typeof ctx.mapHeight === 'number' ? ctx.mapHeight : 700,
+    intersections,
+    characters,
+  };
+}
+
 function shuffle(values, rng) {
   const copy = [...values];
 
@@ -258,6 +267,8 @@ export function createCharacter(intersections, rng, colorIndex) {
     blood: 100,
     maxBlood: 100,
     hungry: false,
+    traits: [],
+    flyTarget: null,
     rng: createLocalRNG(rng.int(1, 0x7fffffff)),
   };
 
@@ -279,9 +290,18 @@ export function setCharacterDestination(char, destination) {
   }
 }
 
-export function updateCharacter(char, dt, intersections, characters = []) {
+export function updateCharacter(char, dt, intersections, characters = [], ctx = {}) {
   if (char.frozen) {
     return;
+  }
+
+  const traitContext = buildTraitContext(intersections, characters, ctx);
+
+  for (const trait of char.traits ?? []) {
+    if (trait?.update?.(char, dt, traitContext)) {
+      pushTrail(char);
+      return;
+    }
   }
 
   if (acquirePathFromDestination(char, intersections, characters)) {

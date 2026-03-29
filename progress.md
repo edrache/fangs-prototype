@@ -73,7 +73,6 @@ Original prompt: od czego zaczniej implementacje? zrób to
 - Changed the top control panel to start collapsed on first load by default, with the toggle icon and `aria-expanded` state matching the collapsed view immediately after refresh.
 
 TODO
-- Implement Traits system: `char.traits` array, trait hook loop in `updateCharacter`, `FlyingTrait` (straight-line movement), `VampireTrait` (marker), Blood simulation filtered by Vampire trait, player characters auto-assigned VampireTrait. Spec: `docs/superpowers/specs/2026-03-29-traits-design.md`. Plan: `docs/superpowers/plans/2026-03-29-traits.md`.
 - Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.
 - Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.
 
@@ -104,3 +103,8 @@ TODO
 - Fixed a follow-up bug in `main.js`: Blood decay was being updated with real-time milliseconds instead of game-time milliseconds, which made the stat drain about 288x too slowly to notice during normal play.
 - `stepSimulation()` now passes `currentStep * GAME_CLOCK_RATIO` into `updateBlood()`, so the Blood drain rate matches the accelerated day/night clock.
 - Re-verified at `http://127.0.0.1:8088/index.html` with a Playwright spot-check: player characters started at about `100` Blood and dropped to roughly `94` after `window.advanceTime(60000)`, confirming visibly noticeable decay over one real minute.
+- Implemented the Traits milestone across `entities/character.js`, `entities/traits/flying.js`, `entities/traits/vampire.js`, `entities/traits/index.js`, `simulation/blood.js`, and `main.js`: characters now carry `traits` and `flyTarget`, `updateCharacter` supports trait-owned movement ticks, Blood simulation filters on the Vampire trait, and player characters receive `VampireTrait` automatically.
+- Extended the bottom player panel with live trait pills plus trait-management controls: `+ Trait` opens a contextual menu of registered traits, `- Traits` toggles removal mode, and clicking a trait pill in removal mode removes it from that character.
+- Fixed the panel interaction flow so clicking a player card reliably opens the same context menu as clicking the character on the map, while panel-local trait actions stay stable under frequent rerenders.
+- Fixed Flying + Hunt interaction bugs in `simulation/hunt.js` and `entities/traits/flying.js`: hunts now clear stale flight movement on start, airborne pursuit tracks the live NPC position, and hunt contact can promote into the timed hunting ring based on positional overlap instead of street-graph state alone.
+- Re-verified the Traits + panel + hunt slice with `node --check` across touched modules plus Playwright/browser smoke checks, including adding/removing `Flying`, opening the player-card menu from the panel, and confirming that a Flying hunter reaches `hunt.phase === "hunting"` before `hunt_success`.

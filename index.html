@@ -209,6 +209,118 @@
       border-color: rgba(145, 164, 255, 0.4);
     }
 
+    .day-display {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 8px;
+    }
+
+    .day-display__phase {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f2f5ff;
+    }
+
+    .day-display__phase--dangerous {
+      color: #ffb060;
+    }
+
+    .day-display__timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .day-display__track {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(181, 190, 227, 0.16);
+      background:
+        linear-gradient(
+          90deg,
+          rgba(42, 50, 96, 0.96) 0,
+          rgba(18, 22, 45, 0.96) var(--day-start-percent),
+          rgba(235, 173, 84, 0.92) var(--day-start-percent),
+          rgba(255, 211, 125, 0.92) 100%
+        );
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.06),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.28);
+    }
+
+    .day-display__boundary {
+      position: absolute;
+      top: -1px;
+      bottom: -1px;
+      left: var(--day-start-percent);
+      width: 2px;
+      background: rgba(255, 244, 199, 0.72);
+      box-shadow: 0 0 10px rgba(255, 210, 138, 0.38);
+      transform: translateX(-50%);
+    }
+
+    .day-display__divider {
+      position: absolute;
+      top: 1px;
+      bottom: 1px;
+      left: var(--divider-percent);
+      width: 1px;
+      background: rgba(231, 237, 255, 0.28);
+      transform: translateX(-50%);
+    }
+
+    .day-display__divider--day {
+      background: rgba(92, 60, 12, 0.26);
+    }
+
+    .day-display__thumb {
+      position: absolute;
+      top: 50%;
+      left: var(--time-percent);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid rgba(247, 250, 255, 0.96);
+      background: #eef4ff;
+      box-shadow:
+        0 0 0 2px rgba(9, 13, 24, 0.42),
+        0 0 12px rgba(178, 194, 255, 0.45);
+      transform: translate(-50%, -50%);
+      transition:
+        left 140ms linear,
+        background 140ms ease,
+        box-shadow 140ms ease,
+        border-color 140ms ease;
+    }
+
+    .day-display__thumb--dangerous {
+      border-color: rgba(255, 243, 234, 0.98);
+      background: #ffb060;
+      box-shadow:
+        0 0 0 2px rgba(9, 13, 24, 0.42),
+        0 0 14px rgba(255, 176, 96, 0.65);
+    }
+
+    .day-display__labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      line-height: 1;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #7f8ab1;
+    }
+
+    .day-display__date {
+      font-size: 10px;
+      color: #9ca6c7;
+    }
+
     #controls.collapsed .controls-left,
     #controls.collapsed .controls-right {
       display: none;
@@ -323,6 +435,16 @@
         grid-column: 1 / -1;
       }
 
+      #time-controls {
+        flex-wrap: wrap;
+      }
+
+      .day-display {
+        order: 3;
+        flex: 1 0 100%;
+        padding: 4px 0 0;
+      }
+
       #player-panel {
         grid-template-columns: 1fr;
       }
@@ -330,7 +452,7 @@
   </style>
 </head>
 <body>
-  <div id="controls">
+  <div id="controls" class="collapsed">
     <div class="controls-left">
       <div class="panel-copy">
         <strong>Fangs Prototype</strong>
@@ -347,7 +469,7 @@
     </div>
 
     <div id="time-controls">
-      <button id="panel-toggle" type="button" aria-label="Toggle panel">▲</button>
+      <button id="panel-toggle" type="button" aria-label="Toggle panel" aria-expanded="false">▼</button>
     </div>
   </div>
 

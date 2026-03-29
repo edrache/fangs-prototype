@@ -11,6 +11,8 @@ Procedurally generated city map built in plain HTML/JavaScript (no bundler, no f
 - Player and NPC characters navigating the street graph with BFS
 - Seed-based deterministic city generation and initial character placement
 - Player characters spawning inside the player-owned district
+- 5-minute real-time day/night cycle with a seeded 2026 calendar
+- Time bar showing named phases, full date, and a color-split day/night slider with phase dividers
 
 ## Running
 
@@ -56,6 +58,8 @@ The same top panel now also includes time controls for the live simulation:
 | `10×` | Maximum fast-forward mode |
 | `▲ / ▼` | Collapse or expand the main control panel while leaving the time controls visible |
 
+The panel starts collapsed by default after a fresh page load, so the time bar and simulation stay in focus until you expand the controls.
+
 Keyboard shortcuts mirror the buttons:
 
 | Key | Action |
@@ -65,6 +69,16 @@ Keyboard shortcuts mirror the buttons:
 | `2` | Set `2×` speed |
 | `3` | Set `4×` speed |
 | `4` | Set `10×` speed |
+
+The day display in the time bar includes:
+
+| Element | Description |
+|---|---|
+| Phase line | Current named phase plus `HH:MM` game time |
+| Timeline slider | Visual 24-hour bar where the left edge is the start of night |
+| Night/day split | Dark blue night segment and warm gold day segment |
+| Phase dividers | Thin unlabeled lines marking phase boundaries across the day |
+| Date line | Calendar date, weekday, and current game day number |
 
 Below the canvas, the app also shows a dedicated player-character panel:
 
@@ -191,11 +205,13 @@ The interaction layer maps a street click to the nearest reachable street-graph 
 5. `pathfinding/bfs.js` finds shortest routes across the intersection graph.
 6. `entities/character.js` advances characters segment-by-segment, keeps a short visual trail, and uses the player / NPC split established in `main.js`.
 7. `ui/controls.js` manages slider state and only applies it when `Regenerate` is clicked.
-8. `ui/timeControls.js` manages simulation speed buttons, keyboard shortcuts, and the active time-scale state.
-9. `ui/interaction.js` handles canvas hit testing, player-character selection, and street-click rerouting.
-10. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection and movement state.
-11. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, the player-district border, and debug intersections.
-12. `main.js` regenerates the city, spawns player characters inside the player-owned district, and exposes debug state through `render_game_to_text()`.
+8. `simulation/clock.js` derives the 24-hour clock, named phases, and seeded 2026 calendar from elapsed simulation time.
+9. `ui/timeControls.js` manages simulation speed buttons, keyboard shortcuts, and the active time-scale state.
+10. `ui/dayDisplay.js` renders the current phase, date, and the visual day/night timeline slider.
+11. `ui/interaction.js` handles canvas hit testing, player-character selection, and street-click rerouting.
+12. `ui/playerPanel.js` keeps the player-character status cards in sync with the current selection and movement state.
+13. `renderer/canvas.js` draws districts, streets, buildings, moving characters, interaction overlays, the player-district border, and debug intersections.
+14. `main.js` regenerates the city, spawns player characters inside the player-owned district, wires the clock into the UI, and exposes debug state through `render_game_to_text()`.
 
 ## Architecture
 
@@ -205,6 +221,7 @@ pathfinding/   — BFS route finding on the street graph
 entities/      — Character spawning and movement updates
 renderer/      — Stateless Canvas renderer
 ui/            — Control panel, time controls, and canvas interaction flow
+simulation/    — Pure simulation helpers such as the day/night clock
 scripts/       — Local development helpers (including Playwright screenshot checks)
 main.js        — Game loop and high-level parameters
 ```

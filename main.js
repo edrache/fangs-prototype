@@ -3,6 +3,8 @@ import { generateCity } from './generator/city.js';
 import { createRNG } from './generator/rng.js';
 import { renderCity } from './renderer/canvas.js';
 import { createControls } from './ui/controls.js';
+import { createClock } from './simulation/clock.js';
+import { createDayDisplay } from './ui/dayDisplay.js';
 import { createInteractionController } from './ui/interaction.js';
 import { createPlayerPanel } from './ui/playerPanel.js';
 import { createTimeControls } from './ui/timeControls.js';
@@ -38,6 +40,7 @@ const state = {
   frame: 0,
   timeMs: 0,
   lastTickMs: performance.now(),
+  startDayOfYear: 1,
 };
 
 const interaction = createInteractionController({
@@ -72,6 +75,9 @@ const controls = createControls({
   },
 });
 
+let clock = createClock(1);
+const dayDisplay = createDayDisplay({ mount: timeControlsPanel });
+
 createTimeControls({
   mount: timeControlsPanel,
   onSpeedChange(scale) {
@@ -82,6 +88,7 @@ createTimeControls({
 panelToggle.addEventListener('click', () => {
   const isCollapsed = controlsEl.classList.toggle('collapsed');
   panelToggle.textContent = isCollapsed ? '▼' : '▲';
+  panelToggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
   panelToggle.blur();
 });
 
@@ -137,6 +144,7 @@ function render() {
   const interactionState = interaction.getState();
   renderCity(ctx, state.city, state.characters, interactionState);
   playerPanel.update(interactionState);
+  dayDisplay.update(clock.getState(state.timeMs));
 }
 
 function stepSimulation(deltaMs) {
@@ -157,6 +165,8 @@ function stepSimulation(deltaMs) {
 }
 
 function regenerate() {
+  state.startDayOfYear = createRNG(params.seed ^ 0xDAD0C10C).int(1, 365);
+  clock = createClock(state.startDayOfYear);
   state.city = generateCity(params);
   state.characters = createCharacters(state.city, params.seed, params.characters);
   state.frame = 0;
@@ -176,48 +186,60 @@ function tick(now) {
   window.requestAnimationFrame(tick);
 }
 
-window.render_game_to_text = () => JSON.stringify({
-  coordinateSystem: 'origin at top-left, +x right, +y down',
-  seed: params.seed,
-  requestedDistricts: params.districts,
-  streetDensity: params.streetDensity,
-  buildingDensity: params.buildingDensity,
-  requestedCharacterCount: params.characters,
-  generatedDistricts: state.city?.districts.length ?? 0,
-  totalStreetCount: state.city?.streets.length ?? 0,
-  buildingCount: state.city?.buildings.length ?? 0,
-  intersectionCount: state.city?.intersections.length ?? 0,
-  characterCount: state.characters.length,
-  timeMs: state.timeMs,
-  frame: state.frame,
-  interaction: interaction.getState(),
-  districts: (state.city?.districts ?? []).map((district) => ({
-    id: district.id,
-    color: district.color,
-    isPlayerOwned: district.isPlayerOwned,
-    bounds: district.bounds,
-  })),
-  buildingsSample: (state.city?.buildings ?? []).slice(0, 6),
-  intersectionsSample: (state.city?.intersections ?? []).slice(0, 12),
-  characters: state.characters.map((character) => ({
-    id: character.id,
-    isPlayer: character.isPlayer,
-    color: character.color,
-    pos: {
-      x: Number(character.pos.x.toFixed(2)),
-      y: Number(character.pos.y.toFixed(2)),
+window.render_game_to_text = () => {
+  const clockState = clock.getState(state.timeMs);
+
+  return JSON.stringify({
+    coordinateSystem: 'origin at top-left, +x right, +y down',
+    seed: params.seed,
+    requestedDistricts: params.districts,
+    streetDensity: params.streetDensity,
+    buildingDensity: params.buildingDensity,
+    requestedCharacterCount: params.characters,
+    generatedDistricts: state.city?.districts.length ?? 0,
+    totalStreetCount: state.city?.streets.length ?? 0,
+    buildingCount: state.city?.buildings.length ?? 0,
+    intersectionCount: state.city?.intersections.length ?? 0,
+    characterCount: state.characters.length,
+    timeMs: state.timeMs,
+    frame: state.frame,
+    startDayOfYear: state.startDayOfYear,
+    clock: {
+      hour: clockState.hour,
+      minute: clockState.minute,
+      dayNumber: clockState.dayNumber,
+      phase: clockState.phase,
+      date: clockState.date,
     },
-    from: character.from,
-    to: character.to,
-    progress: Number(character.progress.toFixed(3)),
-    pathLength: character.path.length,
-    destination: character.destination,
-    trail: character.trail.slice(0, 10).map((point) => ({
-      x: Number(point.x.toFixed(2)),
-      y: Number(point.y.toFixed(2)),
+    interaction: interaction.getState(),
+    districts: (state.city?.districts ?? []).map((district) => ({
+      id: district.id,
+      color: district.color,
+      isPlayerOwned: district.isPlayerOwned,
+      bounds: district.bounds,
     })),
-  })),
-});
+    buildingsSample: (state.city?.buildings ?? []).slice(0, 6),
+    intersectionsSample: (state.city?.intersections ?? []).slice(0, 12),
+    characters: state.characters.map((character) => ({
+      id: character.id,
+      isPlayer: character.isPlayer,
+      color: character.color,
+      pos: {
+        x: Number(character.pos.x.toFixed(2)),
+        y: Number(character.pos.y.toFixed(2)),
+      },
+      from: character.from,
+      to: character.to,
+      progress: Number(character.progress.toFixed(3)),
+      pathLength: character.path.length,
+      destination: character.destination,
+      trail: character.trail.slice(0, 10).map((point) => ({
+        x: Number(point.x.toFixed(2)),
+        y: Number(point.y.toFixed(2)),
+      })),
+    })),
+  });
+};
 
 window.advanceTime = (ms) => {
   stepSimulation(ms);

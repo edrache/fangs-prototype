@@ -30,7 +30,7 @@
 - Modify: `entities/character.js`
 - Modify: `main.js`
 
-- [ ] **Step 1: Add `capabilities`, `hunt`, `frozen` to `createCharacter`**
+- [x] **Step 1: Add `capabilities`, `hunt`, `frozen` to `createCharacter`**
 
 In `entities/character.js`, find the `char` object literal inside `createCharacter`. Add three fields after `isPlayer: false,`:
 
@@ -41,7 +41,7 @@ hunt: null,
 frozen: false,
 ```
 
-- [ ] **Step 2: Freeze characters during hunt**
+- [x] **Step 2: Freeze characters during hunt**
 
 At the very top of `updateCharacter` (before any other logic), add:
 
@@ -51,7 +51,7 @@ export function updateCharacter(char, dt, intersections, characters = []) {
   // … rest unchanged
 ```
 
-- [ ] **Step 3: Give player characters the `hunt` capability**
+- [x] **Step 3: Give player characters the `hunt` capability**
 
 In `main.js`, inside `createCharacters`, find the line `character.isPlayer = index < PLAYER_COUNT;` and add the capability assignment right after:
 
@@ -62,7 +62,7 @@ if (character.isPlayer) {
 }
 ```
 
-- [ ] **Step 4: Verify in browser**
+- [x] **Step 4: Verify in browser**
 
 Open browser console at `http://127.0.0.1:8080/index.html` and run:
 
@@ -72,7 +72,7 @@ JSON.parse(window.render_game_to_text()).characters.slice(0, 4).map(c => ({id: c
 
 Expected: first 3 show `capabilities: ['hunt']`, rest show `capabilities: []`. No console errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add entities/character.js main.js
@@ -86,7 +86,7 @@ git commit -m "feat: add capabilities, hunt, frozen to character model"
 **Files:**
 - Create: `simulation/hunt.js`
 
-- [ ] **Step 1: Create the module**
+- [x] **Step 1: Create the module**
 
 ```js
 import { setCharacterDestination } from '../entities/character.js';
@@ -143,7 +143,7 @@ export function cancelHunt(playerChar, characters) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add simulation/hunt.js
@@ -157,7 +157,7 @@ git commit -m "feat: add simulation/hunt.js with startHunt, updateHunts, cancelH
 **Files:**
 - Modify: `main.js`
 
-- [ ] **Step 1: Import hunt functions**
+- [x] **Step 1: Import hunt functions**
 
 At the top of `main.js`, alongside other simulation imports:
 
@@ -165,7 +165,7 @@ At the top of `main.js`, alongside other simulation imports:
 import { startHunt, updateHunts, cancelHunt } from './simulation/hunt.js';
 ```
 
-- [ ] **Step 2: Add `notifications` to `state`**
+- [x] **Step 2: Add `notifications` to `state`**
 
 Find the `state` object and add:
 
@@ -181,7 +181,7 @@ const state = {
 };
 ```
 
-- [ ] **Step 3: Add `onHuntComplete`**
+- [x] **Step 3: Add `onHuntComplete`**
 
 Add this function after the `state` object:
 
@@ -198,7 +198,7 @@ function onHuntComplete(playerChar, npcChar) {
 }
 ```
 
-- [ ] **Step 4: Call `updateHunts` in the simulation step**
+- [x] **Step 4: Call `updateHunts` in the simulation step**
 
 In `stepSimulation`, find the inner loop that calls `updateCharacters`. The loop is:
 
@@ -223,7 +223,7 @@ while (remaining > 0) {
 
 Note: `updateHunts` receives `currentStep` in **milliseconds** (game time). `elapsed` accumulates ms and compares against `HUNT_DURATION_MS = 3_600_000`.
 
-- [ ] **Step 5: Expire notifications in `tick`**
+- [x] **Step 5: Expire notifications in `tick`**
 
 In the `tick` function, add before `stepSimulation`:
 
@@ -239,7 +239,7 @@ function tick(now) {
 }
 ```
 
-- [ ] **Step 6: Pass `onStartHunt` and `onCancelHunt` to interaction controller**
+- [x] **Step 6: Pass `onStartHunt` and `onCancelHunt` to interaction controller**
 
 Find `createInteractionController({...})` and add two new callbacks alongside the existing ones:
 
@@ -266,7 +266,7 @@ const interaction = createInteractionController({
 });
 ```
 
-- [ ] **Step 7: Pass notifications to `render`**
+- [x] **Step 7: Pass notifications to `render`**
 
 Update the `render` function to pass `state.notifications` to both `renderCity` and `playerPanel.update`:
 
@@ -279,7 +279,7 @@ function render() {
 }
 ```
 
-- [ ] **Step 8: Reset notifications on regenerate**
+- [x] **Step 8: Reset notifications on regenerate**
 
 In `regenerate()`, add `state.notifications = [];`:
 
@@ -297,7 +297,7 @@ function regenerate() {
   // … rest unchanged
 ```
 
-- [ ] **Step 9: Verify — no errors, hunt starts**
+- [x] **Step 9: Verify — no errors, hunt starts**
 
 Open browser console and run:
 
@@ -309,7 +309,7 @@ chars.slice(0,4).map(c => ({id: c.id, isPlayer: c.isPlayer}))
 
 No console errors. The page continues to animate. Hunt wiring will be testable after Task 4.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add main.js
@@ -323,7 +323,7 @@ git commit -m "feat: wire hunt system into main loop and render pipeline"
 **Files:**
 - Modify: `ui/interaction.js`
 
-- [ ] **Step 1: Replace static `MENU_ITEMS` with dynamic helpers**
+- [x] **Step 1: Replace static `MENU_ITEMS` with dynamic helpers**
 
 Remove the existing `export const MENU_ITEMS = [...]` and replace with:
 
@@ -354,7 +354,7 @@ function getCurrentMenuItems(character) {
 }
 ```
 
-- [ ] **Step 2: Update `getMenuLayoutForCharacter` to accept `itemCount`**
+- [x] **Step 2: Update `getMenuLayoutForCharacter` to accept `itemCount`**
 
 The function is exported and used by the renderer via `interactionState.menuLayout`. Update its signature so the height derives from `itemCount`:
 
@@ -380,7 +380,7 @@ export function getMenuLayoutForCharacter(canvasWidth, canvasHeight, character, 
 }
 ```
 
-- [ ] **Step 3: Update `createInteractionController` signature**
+- [x] **Step 3: Update `createInteractionController` signature**
 
 Add `onStartHunt` and `onCancelHunt` to the destructured parameters:
 
@@ -396,7 +396,7 @@ export function createInteractionController({
 }) {
 ```
 
-- [ ] **Step 4: Add `npcTargetCharacterId` to state**
+- [x] **Step 4: Add `npcTargetCharacterId` to state**
 
 Inside `createInteractionController`, add the new field to the `state` object:
 
@@ -413,7 +413,7 @@ const state = {
 };
 ```
 
-- [ ] **Step 5: Add NPC target helper and replace `getMenuLayout()`**
+- [x] **Step 5: Add NPC target helper and replace `getMenuLayout()`**
 
 Add these helpers after the existing helper functions:
 
@@ -439,7 +439,7 @@ function getMenuLayoutForCurrentMode() {
 
 Find all existing calls to `getMenuLayout()` in the file and replace them with `getMenuLayoutForCurrentMode()`. Also delete the old `getMenuLayout()` function.
 
-- [ ] **Step 6: Add `beginHuntPicking`**
+- [x] **Step 6: Add `beginHuntPicking`**
 
 ```js
 function beginHuntPicking() {
@@ -452,7 +452,7 @@ function beginHuntPicking() {
 }
 ```
 
-- [ ] **Step 7: Replace `handleMenuClick` with a version that handles all menu items**
+- [x] **Step 7: Replace `handleMenuClick` with a version that handles all menu items**
 
 ```js
 function handleMenuClick(point) {
@@ -502,7 +502,7 @@ function handleMenuClick(point) {
 }
 ```
 
-- [ ] **Step 8: Update `handleClick` to handle new modes**
+- [x] **Step 8: Update `handleClick` to handle new modes**
 
 Replace the entire `handleClick` function:
 
@@ -572,7 +572,7 @@ function handleClick(event) {
 }
 ```
 
-- [ ] **Step 9: Update `handlePointerMove` for new modes**
+- [x] **Step 9: Update `handlePointerMove` for new modes**
 
 Find the line that sets `hoveredMenuItemIndex` in `handlePointerMove` and update it:
 
@@ -583,7 +583,7 @@ state.hoveredMenuItemIndex =
     : null;
 ```
 
-- [ ] **Step 10: Update `updateCursor` for new modes**
+- [x] **Step 10: Update `updateCursor` for new modes**
 
 ```js
 function updateCursor() {
@@ -609,7 +609,7 @@ function updateCursor() {
 }
 ```
 
-- [ ] **Step 11: Update `clearSelection` and `reset` to clear new state field**
+- [x] **Step 11: Update `clearSelection` and `reset` to clear new state field**
 
 In `clearSelection`, add `state.npcTargetCharacterId = null;`:
 
@@ -643,7 +643,7 @@ function reset() {
 }
 ```
 
-- [ ] **Step 12: Update `getState` to include `menuItems` and `npcTargetCharacterId`**
+- [x] **Step 12: Update `getState` to include `menuItems` and `npcTargetCharacterId`**
 
 ```js
 function getState() {
@@ -665,7 +665,7 @@ function getState() {
 }
 ```
 
-- [ ] **Step 13: Verify both trigger paths in browser**
+- [x] **Step 13: Verify both trigger paths in browser**
 
 Open `http://127.0.0.1:8080/index.html`.
 
@@ -677,7 +677,7 @@ Open `http://127.0.0.1:8080/index.html`.
 
 No console errors.
 
-- [ ] **Step 14: Commit**
+- [x] **Step 14: Commit**
 
 ```bash
 git add ui/interaction.js
@@ -691,7 +691,7 @@ git commit -m "feat: add hunt_picking and npc_menu_open interaction modes with d
 **Files:**
 - Modify: `renderer/canvas.js`
 
-- [ ] **Step 1: Update import — remove `MENU_ITEMS`, keep nothing from interaction**
+- [x] **Step 1: Update import — remove `MENU_ITEMS`, keep nothing from interaction**
 
 The renderer no longer needs to import from `interaction.js` — all menu data comes via `interactionState`. Remove the import line:
 
@@ -700,7 +700,7 @@ The renderer no longer needs to import from `interaction.js` — all menu data c
 import { getMenuLayoutForCharacter, MENU_ITEMS } from '../ui/interaction.js';
 ```
 
-- [ ] **Step 2: Update `drawActionMenu` to use data from `interactionState`**
+- [x] **Step 2: Update `drawActionMenu` to use data from `interactionState`**
 
 Replace the existing `drawActionMenu` function signature and body:
 
@@ -749,7 +749,7 @@ function drawActionMenu(ctx, layout, menuItems, hoveredMenuItemIndex, title) {
 }
 ```
 
-- [ ] **Step 3: Update `drawInteractionOverlay` to call new `drawActionMenu`**
+- [x] **Step 3: Update `drawInteractionOverlay` to call new `drawActionMenu`**
 
 Find the call to `drawActionMenu` inside `drawInteractionOverlay` and replace with:
 
@@ -766,7 +766,7 @@ if (interactionState.mode === 'menu_open' || interactionState.mode === 'npc_menu
 }
 ```
 
-- [ ] **Step 4: Add hunt ring drawing function**
+- [x] **Step 4: Add hunt ring drawing function**
 
 Add this function after `drawHoveredCharacter`:
 
@@ -798,7 +798,7 @@ function drawHuntRing(ctx, character) {
 }
 ```
 
-- [ ] **Step 5: Call `drawHuntRing` for every character**
+- [x] **Step 5: Call `drawHuntRing` for every character**
 
 In `drawCharacters`, after the second loop (where characters are drawn as circles/diamonds), add a third pass for hunt rings:
 
@@ -818,17 +818,17 @@ function drawCharacters(ctx, characters) {
 }
 ```
 
-- [ ] **Step 6: Update `renderCity` signature to accept `notifications`**
+- [x] **Step 6: Update `renderCity` signature to accept `notifications`**
 
 ```js
 export function renderCity(ctx, city, characters = [], interactionState = null, notifications = []) {
 ```
 
-- [ ] **Step 7: Verify ring in browser**
+- [x] **Step 7: Verify ring in browser**
 
 For quick visual verification, temporarily change `HUNT_DURATION_MS` to `60_000` in `simulation/hunt.js` (1 game minute instead of 1 hour). At `10×` speed the ring fills in ~6 real seconds. Restore to `3_600_000` after verification. No console errors.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add renderer/canvas.js
@@ -842,7 +842,7 @@ git commit -m "feat: dynamic menu rendering and hunt timer ring"
 **Files:**
 - Modify: `renderer/canvas.js`
 
-- [ ] **Step 1: Add notification drawing function**
+- [x] **Step 1: Add notification drawing function**
 
 Add this function after `drawHuntRing`:
 
@@ -885,7 +885,7 @@ function drawHuntSuccessNotifications(ctx, characters, notifications) {
 }
 ```
 
-- [ ] **Step 2: Call it at the end of `renderCity` (topmost layer)**
+- [x] **Step 2: Call it at the end of `renderCity` (topmost layer)**
 
 At the very end of `renderCity`, after all other drawing calls:
 
@@ -893,7 +893,7 @@ At the very end of `renderCity`, after all other drawing calls:
 drawHuntSuccessNotifications(ctx, characters, notifications);
 ```
 
-- [ ] **Step 3: Verify success animation in browser**
+- [x] **Step 3: Verify success animation in browser**
 
 Complete a hunt at `10×` speed. Verify:
 - NPC disappears from canvas
@@ -902,7 +902,7 @@ Complete a hunt at `10×` speed. Verify:
 
 No console errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add renderer/canvas.js
@@ -917,7 +917,7 @@ git commit -m "feat: render hunt success notification (flash ring + floating tex
 - Modify: `ui/playerPanel.js`
 - Modify: `index.html`
 
-- [ ] **Step 1: Add `getHuntStatusText` helper**
+- [x] **Step 1: Add `getHuntStatusText` helper**
 
 In `ui/playerPanel.js`, add after the existing `getStatusText` function:
 
@@ -936,7 +936,7 @@ function getHuntStatusText(character, notifications) {
 }
 ```
 
-- [ ] **Step 2: Add hunt status element to `createCard`**
+- [x] **Step 2: Add hunt status element to `createCard`**
 
 Update `createCard` to accept `notifications` and append the hunt status row:
 
@@ -986,7 +986,7 @@ function createCard(character, isSelected, notifications) {
 }
 ```
 
-- [ ] **Step 3: Update `buildRenderSignature` to include hunt state**
+- [x] **Step 3: Update `buildRenderSignature` to include hunt state**
 
 Hunt progress changes every frame — include `hunt.elapsed` in the signature so the panel re-renders during active hunts:
 
@@ -1009,7 +1009,7 @@ function buildRenderSignature(characters, interactionState, notifications) {
 }
 ```
 
-- [ ] **Step 4: Update `update` and `render` to accept and pass notifications**
+- [x] **Step 4: Update `update` and `render` to accept and pass notifications**
 
 Update the `render` function inside `createPlayerPanel`:
 
@@ -1059,7 +1059,7 @@ return {
 };
 ```
 
-- [ ] **Step 5: Add CSS in `index.html`**
+- [x] **Step 5: Add CSS in `index.html`**
 
 Find the `<style>` block in `index.html` and add:
 
@@ -1075,7 +1075,7 @@ Find the `<style>` block in `index.html` and add:
 }
 ```
 
-- [ ] **Step 6: Verify player panel in browser**
+- [x] **Step 6: Verify player panel in browser**
 
 Start a hunt at `1×` speed. Verify the player's card shows:
 - `🏹 Zmierza do celu...` while moving to NPC
@@ -1084,7 +1084,7 @@ Start a hunt at `1×` speed. Verify the player's card shows:
 
 No console errors.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add ui/playerPanel.js index.html

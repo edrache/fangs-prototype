@@ -1,4 +1,7 @@
-Original prompt: od czego zaczniej implementacje? zrób to
+TODO
+- Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.
+- Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.
+- Implement non-uniform day/night time: day (06:00–20:00) passes ~4× faster in real time, night extended to 3 min, total cycle ≈3 min 44 sec. Slider reflects real-time proportions. Plan: `docs/superpowers/plans/2026-03-29-nonuniform-day-night-time.md`.
 
 2026-03-28
 - Added first milestone scaffold: `index.html`, `main.js`, seeded RNG, district generator, city orchestrator, and canvas renderer.
@@ -71,10 +74,6 @@ Original prompt: od czego zaczniej implementacje? zrób to
 - Added unlabeled divider lines for phase boundaries inside the day/night slider so the sub-stages of night and day are visible at a glance without extra text.
 - Verified the divider pass on 2026-03-29 at `http://127.0.0.1:8094/index.html`; `output/day-night-cycle-dividers/full-page.png` shows the phase markers in place, `output/day-night-cycle-dividers/summary.json` reports 7 divider lines, and the follow-up smoke test at `output/web-game-day-night-dividers-smoke` completed without `errors-0.json`.
 - Changed the top control panel to start collapsed on first load by default, with the toggle icon and `aria-expanded` state matching the collapsed view immediately after refresh.
-
-TODO
-- Next likely milestone: expand the popup from a single `Choose destination` action into a richer action set tailored to player characters and decide whether follow should be a dedicated menu item or remain a destination subtype.
-- Consider adding lightweight browser tests for BFS and deterministic character stepping so future interaction work is safer.
 
 2026-03-29
 - Implemented the first end-to-end Hunt action pass across `entities/character.js`, `simulation/hunt.js`, `main.js`, `ui/interaction.js`, `renderer/canvas.js`, `ui/playerPanel.js`, and `index.html`.
